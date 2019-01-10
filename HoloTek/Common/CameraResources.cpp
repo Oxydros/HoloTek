@@ -41,16 +41,17 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
     // Holographic apps do not create a swap chain themselves; instead, buffers are
     // owned by the system. The Direct3D back buffer resources are provided to the
     // app using WinRT interop APIs.
-    ComPtr<ID3D11Texture2D> cameraBackBuffer;
-    winrt::check_hresult(surface.as<::Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>()->GetInterface(IID_PPV_ARGS(&cameraBackBuffer)));
+    winrt::com_ptr<ID3D11Texture2D> cameraBackBuffer;
+    winrt::check_hresult(surface.as<::Windows::Graphics::DirectX::Direct3D11::IDirect3DDxgiInterfaceAccess>()->GetInterface(IID_PPV_ARGS(cameraBackBuffer.put())));
 
     // Determine if the back buffer has changed. If so, ensure that the render target view
     // is for the current back buffer.
-    if (m_d3dBackBuffer.Get() != cameraBackBuffer.Get())
+    if (m_d3dBackBuffer.get() != cameraBackBuffer.get())
     {
         // This can change every frame as the system moves to the next buffer in the
         // swap chain. This mode of operation will occur when certain rendering modes
         // are activated.
+		m_d3dBackBuffer = nullptr;
         m_d3dBackBuffer = cameraBackBuffer;
 
         // Create a render target view of the back buffer.
@@ -58,9 +59,9 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
         // the back buffers in order to pre-allocate render target views for each one.
         winrt::check_hresult(
             device->CreateRenderTargetView(
-                m_d3dBackBuffer.Get(),
+                m_d3dBackBuffer.get(),
                 nullptr,
-                &m_d3dRenderTargetView
+                m_d3dRenderTargetView.put()
             ));
 
         // Get the DXGI format for the back buffer.
@@ -77,7 +78,7 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
             m_d3dRenderTargetSize = currentSize;
 
             // A new depth stencil view is also needed.
-            m_d3dDepthStencilView.Reset();
+			m_d3dDepthStencilView = nullptr;
         }
     }
 
@@ -98,7 +99,7 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
             device->CreateTexture2D(
                 &depthStencilDesc,
                 nullptr,
-                &m_d3dDepthStencil
+                m_d3dDepthStencil.put()
             ));
 
         CD3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc(
@@ -107,22 +108,23 @@ void DX::CameraResources::CreateResourcesForBackBuffer(
         );
         winrt::check_hresult(
             device->CreateDepthStencilView(
-                m_d3dDepthStencil.Get(),
+                m_d3dDepthStencil.get(),
                 &depthStencilViewDesc,
-                &m_d3dDepthStencilView
+                m_d3dDepthStencilView.put()
             ));
     }
 
     // Create the constant buffer, if needed.
     if (m_viewProjectionConstantBuffer == nullptr)
     {
+		ID3D11Buffer *vConstantBuffer = m_viewProjectionConstantBuffer.get();
         // Create a constant buffer to store view and projection matrices for the camera.
         CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
         winrt::check_hresult(
             device->CreateBuffer(
                 &constantBufferDesc,
                 nullptr,
-                &m_viewProjectionConstantBuffer
+				&vConstantBuffer
             ));
     }
 }
@@ -133,11 +135,11 @@ void DX::CameraResources::ReleaseResourcesForBackBuffer(DX::DeviceResources* pDe
     ID3D11DeviceContext* context = pDeviceResources->GetD3DDeviceContext();
 
     // Release camera-specific resources.
-    m_d3dBackBuffer.Reset();
-    m_d3dDepthStencil.Reset();
-    m_d3dRenderTargetView.Reset();
-    m_d3dDepthStencilView.Reset();
-    m_viewProjectionConstantBuffer.Reset();
+	m_d3dBackBuffer = nullptr;
+    m_d3dDepthStencil = nullptr;
+    m_d3dRenderTargetView = nullptr;
+    m_d3dDepthStencilView = nullptr;
+    m_viewProjectionConstantBuffer = nullptr;
 
     // Ensure system references to the back buffer are released by clearing the render
     // target from the graphics pipeline state, and then flushing the Direct3D context.
@@ -207,7 +209,7 @@ void DX::CameraResources::UpdateViewProjectionBuffer(
     {
         // Update the view and projection matrices.
         context->UpdateSubresource(
-            m_viewProjectionConstantBuffer.Get(),
+            m_viewProjectionConstantBuffer.get(),
             0,
             nullptr,
             &viewProjectionConstantBufferData,
@@ -239,11 +241,13 @@ bool DX::CameraResources::AttachViewProjectionBuffer(
     // Set the viewport for this camera.
     context->RSSetViewports(1, &m_d3dViewport);
 
+	ID3D11Buffer *vConstantBuffer = m_viewProjectionConstantBuffer.get();
+
     // Send the constant buffer to the vertex shader.
     context->VSSetConstantBuffers(
         1,
         1,
-        m_viewProjectionConstantBuffer.GetAddressOf()
+        &vConstantBuffer
     );
 
     // The template includes a pass-through geometry shader that is used by

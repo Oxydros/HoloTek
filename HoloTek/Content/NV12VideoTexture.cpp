@@ -12,14 +12,14 @@
 #include "NV12VideoTexture.h"
 #include "Common\DirectXHelper.h"
 
-struct __declspec(uuid("5b0d3235-4dba-4d44-865e-8f1d0e4fd04d")) __declspec(novtable) IMemoryBufferByteAccess : winrt::Windows::Foundation::IUnknown
+struct __declspec(uuid("5b0d3235-4dba-4d44-865e-8f1d0e4fd04d")) __declspec(novtable) IMemoryBufferByteAccess : ::IUnknown
 {
 	virtual HRESULT __stdcall GetBuffer(uint8_t** value, uint32_t* capacity) = 0;
 };
 
 using namespace winrt;
-using namespace Windows::Foundation;
-using namespace Windows::Graphics::Imaging;
+using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Graphics::Imaging;
 
 HoloTek::NV12VideoTexture::NV12VideoTexture(std::shared_ptr<DX::DeviceResources> deviceResources, uint32_t width, uint32_t height)
 	: DX::Resource(std::move(deviceResources))
@@ -48,28 +48,22 @@ void HoloTek::NV12VideoTexture::CopyFromVideoMediaFrame(winrt::Windows::Media::C
 	BitmapBuffer bitmapBuffer = softwareBitmap.LockBuffer(BitmapBufferAccessMode::Read);
 	IMemoryBufferReference bufferRef = bitmapBuffer.CreateReference();
 
-	auto toto = bufferRef.as<winrt::Windows::Foundation::IUnknown>();
+	auto buffer = bufferRef.as<IMemoryBufferByteAccess>();
 
-	auto tata = toto.as<winrt::Windows::Foundation::IMemoryBufferByteAccess>();
+	BYTE* pSourceBuffer = nullptr;
+	UINT32 sourceCapacity = 0;
 
-	/*auto memoryBufferByteAccess = bufferRef.as<IMemoryBufferByteAccess>();*/
-	/*(reinterpret_cast<winrt::Windows::Foundation::IInspectable*>(bufferRef))->QueryInterface(IID_PPV_ARGS(memoryBufferByteAccess.put()))*/
+	winrt::check_hresult(buffer->GetBuffer(&pSourceBuffer, &sourceCapacity));
 
+	auto const context = m_deviceResources->GetD3DDeviceContext();
 
-	//BYTE* pSourceBuffer = nullptr;
-	//UINT32 sourceCapacity = 0;
-
-	//winrt::check_hresult(memoryBufferByteAccess->GetBuffer(&pSourceBuffer, &sourceCapacity));
-
-	//auto const context = m_deviceResources->GetD3DDeviceContext();
-
-	//// Copy the new video frame over.
-	//D3D11_MAPPED_SUBRESOURCE subResource;
-	//if (SUCCEEDED(context->Map(m_texture.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource)))
-	//{
-	//	std::memcpy(subResource.pData, pSourceBuffer, sourceCapacity);
-	//	context->Unmap(m_texture.get(), 0);
-	//}
+	// Copy the new video frame over.
+	D3D11_MAPPED_SUBRESOURCE subResource;
+	if (SUCCEEDED(context->Map(m_texture.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &subResource)))
+	{
+		std::memcpy(subResource.pData, pSourceBuffer, sourceCapacity);
+		context->Unmap(m_texture.get(), 0);
+	}
 }
 
 std::future<void> HoloTek::NV12VideoTexture::CreateDeviceDependentResourcesAsync()
@@ -133,6 +127,7 @@ std::future<void> HoloTek::NV12VideoTexture::CreateDeviceDependentResourcesAsync
 			m_chrominanceView.put()
 		)
 	);
+	co_return;
 }
 
 void HoloTek::NV12VideoTexture::ReleaseDeviceDependentResources()

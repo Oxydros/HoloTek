@@ -19,6 +19,7 @@
 
 #include <Windows.Graphics.Directx.Direct3D11.Interop.h>
 
+#include <wrl/client.h>
 #include <winrt\base.h>
 #include <winrt\Windows.ApplicationModel.Activation.h>
 #include <winrt\Windows.ApplicationModel.Core.h>
@@ -30,6 +31,8 @@
 #include <winrt\Windows.Graphics.Display.h>
 #include <winrt\Windows.Graphics.Holographic.h>
 #include <winrt\Windows.Graphics.Imaging.h>
+#include <winrt\Windows.Graphics.DirectX.h>
+#include <winrt\Windows.Graphics.DirectX.Direct3D11.h>
 #include <winrt\Windows.Perception.People.h>
 #include <winrt\Windows.Perception.Spatial.h>
 #include <winrt\Windows.Storage.h>

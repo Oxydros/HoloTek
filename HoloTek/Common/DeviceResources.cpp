@@ -3,8 +3,8 @@
 #include "DeviceResources.h"
 #include "DirectXHelper.h"
 
-using namespace D2D1;
 using namespace Microsoft::WRL;
+using namespace D2D1;
 using namespace winrt::Windows::Graphics::DirectX::Direct3D11;
 using namespace winrt::Windows::Graphics::Display;
 using namespace winrt::Windows::Graphics::Holographic;

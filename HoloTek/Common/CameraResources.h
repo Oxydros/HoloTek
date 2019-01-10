@@ -37,10 +37,10 @@ namespace DX
             std::shared_ptr<DX::DeviceResources>& deviceResources);
 
         // Direct3D device resources.
-        ID3D11RenderTargetView* GetBackBufferRenderTargetView()     const { return m_d3dRenderTargetView.Get(); }
-        ID3D11DepthStencilView* GetDepthStencilView()               const { return m_d3dDepthStencilView.Get(); }
-        ID3D11Texture2D*        GetBackBufferTexture2D()            const { return m_d3dBackBuffer.Get();       }
-        ID3D11Texture2D*        GetDepthStencilTexture2D()          const { return m_d3dDepthStencil.Get();     }
+        ID3D11RenderTargetView* GetBackBufferRenderTargetView()     const { return m_d3dRenderTargetView.get(); }
+        ID3D11DepthStencilView* GetDepthStencilView()               const { return m_d3dDepthStencilView.get(); }
+        ID3D11Texture2D*        GetBackBufferTexture2D()            const { return m_d3dBackBuffer.get();       }
+        ID3D11Texture2D*        GetDepthStencilTexture2D()          const { return m_d3dDepthStencil.get();     }
         D3D11_VIEWPORT          GetViewport()                       const { return m_d3dViewport;               }
         DXGI_FORMAT             GetBackBufferDXGIFormat()           const { return m_dxgiFormat;                }
 
@@ -53,13 +53,13 @@ namespace DX
 
     private:
         // Direct3D rendering objects. Required for 3D.
-		Microsoft::WRL::ComPtr<ID3D11RenderTargetView>              m_d3dRenderTargetView;
-        Microsoft::WRL::ComPtr<ID3D11DepthStencilView>              m_d3dDepthStencilView;
-        Microsoft::WRL::ComPtr<ID3D11Texture2D>                     m_d3dBackBuffer;
-        Microsoft::WRL::ComPtr<ID3D11Texture2D>                     m_d3dDepthStencil;
+		winrt::com_ptr<ID3D11RenderTargetView>              m_d3dRenderTargetView;
+        winrt::com_ptr<ID3D11DepthStencilView>              m_d3dDepthStencilView;
+        winrt::com_ptr<ID3D11Texture2D>                     m_d3dBackBuffer;
+        winrt::com_ptr<ID3D11Texture2D>                     m_d3dDepthStencil;
 
         // Device resource to store view and projection matrices.
-        Microsoft::WRL::ComPtr<ID3D11Buffer>                        m_viewProjectionConstantBuffer;
+		winrt::com_ptr<ID3D11Buffer>                        m_viewProjectionConstantBuffer;
 
         // Direct3D rendering properties.
         DXGI_FORMAT                                                 m_dxgiFormat;

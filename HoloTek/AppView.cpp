@@ -73,7 +73,7 @@ void AppView::SetWindow(CoreWindow const& window)
     m_deviceResources->SetHolographicSpace(m_holographicSpace);
 
     // The main class uses the holographic space for updates and rendering.
-    m_main->SetHolographicSpace(m_holographicSpace);
+    m_main->SetHolographicSpace(m_holographicSpace).get();
 }
 
 // The Load method can be used to initialize scene resources or to load a

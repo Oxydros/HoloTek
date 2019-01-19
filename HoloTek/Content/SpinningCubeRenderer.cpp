@@ -9,7 +9,7 @@ using namespace winrt::Windows::UI::Input::Spatial;
 
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
 SpinningCubeRenderer::SpinningCubeRenderer(std::shared_ptr<DX::DeviceResources> deviceResources) :
-	DX::Resource(std::move(deviceResources))
+	DX::Resource((deviceResources))
 {
 }
 

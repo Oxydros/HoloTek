@@ -28,7 +28,7 @@ namespace HoloTek
 	class HoloTekMain : public DX::IDeviceNotify
 	{
 	public:
-		HoloTekMain(const std::shared_ptr<DX::DeviceResources>& deviceResources);
+		HoloTekMain(std::shared_ptr<DX::DeviceResources> deviceResources);
 		~HoloTekMain();
 
 		// Sets the holographic space. This is our closest analogue to setting a new window

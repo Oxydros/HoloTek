@@ -115,7 +115,7 @@ namespace DX
 		target = std::make_shared<ObjectType>(std::forward<Args>(args)...);
 
 		// Then we initialize the resources asynchronously
-		return target->CreateDeviceDependentResourcesAsync();
+		co_return target->CreateDeviceDependentResourcesAsync();
 	}
 }
 

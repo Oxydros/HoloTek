@@ -12,7 +12,8 @@
 #include "pch.h"
 #include "VideoFrameProcessor.h"
 
-using namespace HoloTek;
+using namespace winrt;
+using namespace DesktopTek;
 
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
@@ -75,7 +76,19 @@ std::future<std::shared_ptr<VideoFrameProcessor>> VideoFrameProcessor::CreateAsy
 	co_await nonagile_media.InitializeAsync(settings);
 
 	MediaFrameSource selectedSource = nonagile_media.FrameSources().Lookup(selectedSourceInfo.Id());
+	
+	auto formatList = selectedSource.SupportedFormats();
+	//FaceTracking support Nv12 format (output of the HoloLens Camera)
+	MediaFrameFormat chooseFormat = nullptr;
+	for (int i = 0; i < formatList.Size(); i++) {
+		if (formatList.GetAt(i).Subtype() == winrt::Windows::Media::MediaProperties::MediaEncodingSubtypes::Nv12()) {
+			chooseFormat = formatList.GetAt(i);
+			break;
+		}
+	}
+	co_await selectedSource.SetFormatAsync(chooseFormat);
 	MediaFrameReader reader = co_await nonagile_media.CreateFrameReaderAsync(selectedSource);
+	reader.AcquisitionMode(MediaFrameReaderAcquisitionMode::Buffered);
 	MediaFrameReaderStartStatus status = co_await reader.StartAsync();
 	// Only create a VideoFrameProcessor if the reader successfully started
 	if (status == MediaFrameReaderStartStatus::Success)
@@ -104,6 +117,7 @@ void VideoFrameProcessor::OnFrameArrived(MediaFrameReader const &sender, MediaFr
 	if (MediaFrameReference frame = sender.TryAcquireLatestFrame())
 	{
 		std::lock_guard<std::shared_mutex> lock(m_propertiesLock);
+		VideoMediaFrame videoMediaFrame = frame.VideoMediaFrame();
 		m_latestFrame = frame;
 	}
 }

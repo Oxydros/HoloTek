@@ -41,7 +41,7 @@ using namespace Microsoft::WRL;
 using namespace DirectX;
 
 // Loads and initializes application assets when the application is loaded.
-HoloTekMain::HoloTekMain(const std::shared_ptr<DX::DeviceResources>& deviceResources) :
+HoloTekMain::HoloTekMain(std::shared_ptr<DX::DeviceResources> deviceResources) :
 	m_deviceResources(deviceResources)
 {
 	// Register to be notified if the device is lost or recreated.
@@ -88,7 +88,7 @@ std::future<void> HoloTekMain::SetHolographicSpace(HolographicSpace const &holog
 
 	m_videoFrameProcessor = co_await VideoFrameProcessor::CreateAsync();
 
-	/*m_faceTrackerProcessor = co_await FaceTrackerProcessor::CreateAsync(m_videoFrameProcessor);*/
+	m_faceTrackerProcessor = co_await FaceTrackerProcessor::CreateAsync(m_videoFrameProcessor);
 
 	co_await DX::CreateAndInitializeAsync(m_quadRenderer, m_deviceResources);
 	co_await DX::CreateAndInitializeAsync(m_spinningCubeRenderer, m_deviceResources);

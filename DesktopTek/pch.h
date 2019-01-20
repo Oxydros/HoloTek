@@ -11,6 +11,7 @@
 #include <mutex>
 #include <vector>
 #include <memory>
+#include <sstream>
 
 #include <windows.h>
 #include <unknwn.h>
@@ -28,8 +29,12 @@
 #include "winrt/Windows.Media.Capture.h"
 #include "winrt/Windows.System.Display.h"
 #include "winrt/Windows.UI.Core.h"
+#include "winrt/Windows.UI.Xaml.h"
+#include "winrt/Windows.UI.Xaml.Shapes.h"
+#include "winrt/Windows.UI.Xaml.Media.h"
 #include "winrt/Windows.System.Threading.h"
 #include <winrt\Windows.Media.h>
+#include <winrt\Windows.Media.Core.h>
 #include <winrt\Windows.Media.MediaProperties.h>
 #include <winrt\Windows.Media.Capture.h>
 #include <winrt\Windows.Media.Capture.Frames.h>

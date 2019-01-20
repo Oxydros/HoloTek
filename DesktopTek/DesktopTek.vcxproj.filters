@@ -15,15 +15,11 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="MainPage.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
-    <ClCompile Include="Common\FaceTrackerProcessor.cpp" />
-    <ClCompile Include="Common\VideoFrameProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="MainPage.h" />
-    <ClInclude Include="Common\FaceTrackerProcessor.h" />
-    <ClInclude Include="Common\VideoFrameProcessor.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">

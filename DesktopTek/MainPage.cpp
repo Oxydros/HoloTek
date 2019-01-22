@@ -5,13 +5,15 @@ using namespace winrt;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::Foundation;
+using namespace Windows::Foundation::Collections;
 using namespace Windows::Media;
 using namespace Windows::Graphics::Imaging;
+using namespace Windows::Storage::Streams;
 using namespace std;
 
 namespace winrt::DesktopTek::implementation
 {
-	MainPage::MainPage()
+	MainPage::MainPage() : m_frameReader(nullptr), m_latestFrame(nullptr)
 	{
 		InitializeComponent();
 	}
@@ -21,13 +23,58 @@ namespace winrt::DesktopTek::implementation
 		InitializeCameraAsync();
 	}
 
+	IAsyncOperation<Capture::Frames::MediaFrameSource> MainPage::GetMediaSourceAsync()
+	{
+		IVectorView<Capture::Frames::MediaFrameSourceGroup> groups = co_await Capture::Frames::MediaFrameSourceGroup::FindAllAsync();
+
+		Capture::Frames::MediaFrameSourceGroup selectedGroup = nullptr;
+		Capture::Frames::MediaFrameSourceInfo selectedSourceInfo = nullptr;
+
+		for (Capture::Frames::MediaFrameSourceGroup sourceGroup : groups)
+		{
+			for (Capture::Frames::MediaFrameSourceInfo sourceInfo : sourceGroup.SourceInfos())
+			{
+				if (sourceInfo.SourceKind() == Capture::Frames::MediaFrameSourceKind::Color)
+				{
+					selectedSourceInfo = sourceInfo;
+					break;
+				}
+			}
+
+			if (selectedSourceInfo != nullptr)
+			{
+				selectedGroup = sourceGroup;
+				break;
+			}
+		}
+
+		// No valid camera was found. This will happen on the emulator.
+		if (selectedGroup == nullptr || selectedSourceInfo == nullptr)
+		{
+			throw runtime_error("No valid camera found !");
+		}
+		co_return m_mediaCapture.FrameSources().Lookup(selectedSourceInfo.Id());
+	}
 
 	IAsyncAction MainPage::InitializeCameraAsync()
 	{
 		auto settings = Windows::Media::Capture::MediaCaptureInitializationSettings();
 		settings.StreamingCaptureMode(Windows::Media::Capture::StreamingCaptureMode::Video);
+		settings.MemoryPreference(MediaCaptureMemoryPreference::Cpu); // Need SoftwareBitmaps for FaceAnalysis
 
 		co_await m_mediaCapture.InitializeAsync(settings);
+
+		Capture::Frames::MediaFrameSource mediaSource = co_await GetMediaSourceAsync();
+		auto sourceType = Windows::Media::MediaProperties::MediaEncodingSubtypes::Bgra8();
+		m_frameReader = co_await m_mediaCapture.CreateFrameReaderAsync(mediaSource,
+			sourceType);
+
+		m_frameReader.FrameArrived(std::bind(&MainPage::OnFrameArrived, this, std::placeholders::_1, std::placeholders::_2));
+		auto ret = co_await m_frameReader.StartAsync();
+
+		if (ret != MediaFrameReaderStartStatus::Success)
+			throw runtime_error("Couldn't launch frame reader");
+
 		co_await StartPreviewAsync();
 		co_await CreateFaceDetectionEffectAsync();
 	}
@@ -40,12 +87,6 @@ namespace winrt::DesktopTek::implementation
 
 		co_await m_mediaCapture.StartPreviewAsync();
 		m_previewProperties = m_mediaCapture.VideoDeviceController().GetMediaStreamProperties(Capture::MediaStreamType::VideoPreview);
-	}
-
-	void MainPage::TriggerFaceDetected(Windows::Media::Core::FaceDetectionEffect const &sender,
-		Windows::Media::Core::FaceDetectedEventArgs const &args) {
-
-		HighlightDetectedFacesAsync(args.ResultFrame().DetectedFaces());
 	}
 
 	IAsyncAction MainPage::CreateFaceDetectionEffectAsync()
@@ -68,17 +109,79 @@ namespace winrt::DesktopTek::implementation
 		m_faceDetectionEffet.Enabled(true);
 	}
 
+	void MainPage::TriggerFaceDetected(Windows::Media::Core::FaceDetectionEffect const &sender,
+		Windows::Media::Core::FaceDetectedEventArgs const &args) {
+
+		HighlightDetectedFacesAsync(args.ResultFrame().DetectedFaces());
+	}
+
+	IAsyncOperation<SoftwareBitmap> GetCroppedBitmapAsync(SoftwareBitmap softwareBitmap, BitmapBounds bitmapBound)
+	{
+		InMemoryRandomAccessStream stream;
+		BitmapEncoder encoder = co_await BitmapEncoder::CreateAsync(BitmapEncoder::BmpEncoderId(), stream);
+
+		encoder.SetSoftwareBitmap(softwareBitmap);
+
+		encoder.BitmapTransform().Bounds(bitmapBound);
+
+		co_await encoder.FlushAsync();
+
+		BitmapDecoder decoder = co_await BitmapDecoder::CreateAsync(stream);
+
+		auto res = co_await decoder.GetSoftwareBitmapAsync(softwareBitmap.BitmapPixelFormat(), softwareBitmap.BitmapAlphaMode());
+
+		return res;
+	}
+
+	IAsyncAction MainPage::processFace(MediaFrameReference const &frame,
+		BitmapBounds const &face)
+	{
+		co_await winrt::resume_foreground::resume_foreground(FacePreview().Dispatcher());
+		auto videoFrame = frame.VideoMediaFrame();
+		auto videoFormat = videoFrame.VideoFormat();
+		auto softwareBitmap = videoFrame.SoftwareBitmap();
+
+		if (softwareBitmap == nullptr)
+			return;
+
+		SoftwareBitmap croppedBitmap = co_await GetCroppedBitmapAsync(softwareBitmap, face);
+
+		SoftwareBitmap displayableImage = SoftwareBitmap::Convert(croppedBitmap,
+			BitmapPixelFormat::Bgra8,
+			BitmapAlphaMode::Premultiplied);
+		auto source = Media::Imaging::SoftwareBitmapSource();
+
+		co_await source.SetBitmapAsync(displayableImage);
+		FacePreview().Source(source);
+	}
+
 	IAsyncAction MainPage::HighlightDetectedFacesAsync(Windows::Foundation::Collections::IVectorView<winrt::Windows::Media::FaceAnalysis::DetectedFace> faces)
 	{
+		m_propertiesLock.lock();
+		auto frameCopy = m_latestFrame;
+		m_propertiesLock.unlock();
 		co_await winrt::resume_foreground::resume_foreground(FacesCanvas().Dispatcher());
+
+
 		// Remove any existing rectangles from previous events
 		FacesCanvas().Children().Clear();
 
 		// For each detected face
 		for (unsigned int i = 0; i < faces.Size(); i++)
 		{
+			auto faceBoxInPreviewCoordinates = faces.GetAt(i).FaceBox();
+
+			faceBoxInPreviewCoordinates.X -= 60;
+			faceBoxInPreviewCoordinates.Y -= 60;
+			faceBoxInPreviewCoordinates.Width += 120;
+			faceBoxInPreviewCoordinates.Height += 120;
+
+			faceBoxInPreviewCoordinates.X = max(faceBoxInPreviewCoordinates.X, 0);
+			faceBoxInPreviewCoordinates.Y = max(faceBoxInPreviewCoordinates.Y, 0);
+
+			processFace(frameCopy, faceBoxInPreviewCoordinates);
 			// Face coordinate units are preview resolution pixels, which can be a different scale from our display resolution, so a conversion may be necessary
-			Windows::UI::Xaml::Shapes::Rectangle faceBoundingBox = ConvertPreviewToUiRectangle(faces.GetAt(i).FaceBox());
+			Windows::UI::Xaml::Shapes::Rectangle faceBoundingBox = ConvertPreviewToUiRectangle(faceBoxInPreviewCoordinates);
 
 			// Set bounding box stroke properties
 			faceBoundingBox.StrokeThickness(10);
@@ -88,7 +191,7 @@ namespace winrt::DesktopTek::implementation
 
 			std::wstringstream str;
 			str << L"Got a new rectangle at position " << faceBoundingBox.Margin().Left << L" " << faceBoundingBox.Margin().Top
-				<< " with size " << faceBoundingBox.Width()<< " " << faceBoundingBox.Height() << std::endl;
+				<< " with size " << faceBoundingBox.Width() << " " << faceBoundingBox.Height() << std::endl;
 			WriteLine(str.str().c_str());
 
 			// Add grid to canvas containing all face UI objects
@@ -188,43 +291,30 @@ namespace winrt::DesktopTek::implementation
 
 	void MainPage::SetFacesCanvasRotation()
 	{
-		// Calculate how much to rotate the canvas
-		int rotationDegrees = 0;
-
-		// Apply the rotation
-		//auto transform = RotateTransform();
-		//transform.Angle(rotationDegrees);
-		//FacesCanvas().RenderTransform(transform);
-
 		auto previewStream = m_previewProperties.as<MediaProperties::VideoEncodingProperties>();
 		auto previewArea = GetPreviewStreamRectInControl(previewStream, PreviewControl());
-
-		//// For portrait mode orientations, swap the width and height of the canvas after the rotation, so the control continues to overlap the preview
-		//if (_displayOrientation == DisplayOrientations::Portrait || _displayOrientation == DisplayOrientations::PortraitFlipped)
-		//{
-		//FacesCanvas().Width(previewArea.Height);
-		//FacesCanvas().Height(previewArea.Width);
-
-		//// The position of the canvas also needs to be adjusted, as the size adjustment affects the centering of the control
-		//Controls::Canvas::SetLeft(FacesCanvas(), previewArea.X - (previewArea.Height - previewArea.Width) / 2);
-		//Controls::Canvas::SetTop(FacesCanvas(), previewArea.Y - (previewArea.Width - previewArea.Height) / 2);
-		//}
-		//else
-		//{
 		FacesCanvas().Width(previewArea.Width);
 		FacesCanvas().Height(previewArea.Height);
 
 		Controls::Canvas::SetLeft(FacesCanvas(), previewArea.X);
 		Controls::Canvas::SetTop(FacesCanvas(), previewArea.Y);
-		//}
-
-		// Also mirror the canvas if the preview is being mirrored
-		/*FacesCanvas->FlowDirection = _mirroringPreview ? Windows::UI::Xaml::FlowDirection::RightToLeft : Windows::UI::Xaml::FlowDirection::LeftToRight;*/
 		FacesCanvas().FlowDirection(Windows::UI::Xaml::FlowDirection::LeftToRight);
 	}
 
 	void MainPage::WriteLine(winrt::hstring str)
 	{
+#ifdef _DEBUG
 		OutputDebugString(str.c_str());
+#endif
+	}
+
+	void MainPage::OnFrameArrived(MediaFrameReader const &sender, MediaFrameArrivedEventArgs const &args)
+	{
+		if (MediaFrameReference frame = sender.TryAcquireLatestFrame())
+		{
+			std::lock_guard<std::shared_mutex> lock(m_propertiesLock);
+			WriteLine(L"Got Frame !\n");
+			m_latestFrame = frame;
+		}
 	}
 }

@@ -12,6 +12,7 @@
 #include <vector>
 #include <memory>
 #include <sstream>
+#include <pplawait.h>
 
 #include <windows.h>
 #include <unknwn.h>
@@ -50,3 +51,9 @@
 
 #include <winrt\Windows.Storage.h>
 #include <winrt\Windows.Storage.Streams.h>
+
+#include <dlib\dnn.h>
+#include <dlib\clustering.h>
+#include <dlib\string.h>
+#include <dlib\image_io.h>
+#include <dlib\image_processing\frontal_face_detector.h>

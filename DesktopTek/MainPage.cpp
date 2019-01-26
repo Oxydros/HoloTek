@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "MainPage.h"
 
+#include <dlib/gui_widgets.h>
+
 using namespace winrt;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Media;
@@ -13,13 +15,14 @@ using namespace std;
 
 namespace winrt::DesktopTek::implementation
 {
-	MainPage::MainPage() : m_frameReader(nullptr), m_latestFrame(nullptr)
+	MainPage::MainPage() : m_frameReader(nullptr), m_latestBitmap(nullptr)
 	{
 		InitializeComponent();
 	}
 
 	void MainPage::OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs const &e)
 	{
+		m_faceBuffer.InitializeAsync();
 		InitializeCameraAsync();
 	}
 
@@ -76,7 +79,7 @@ namespace winrt::DesktopTek::implementation
 			throw runtime_error("Couldn't launch frame reader");
 
 		co_await StartPreviewAsync();
-		co_await CreateFaceDetectionEffectAsync();
+		//co_await CreateFaceDetectionEffectAsync();
 	}
 
 	IAsyncAction MainPage::StartPreviewAsync()
@@ -115,12 +118,20 @@ namespace winrt::DesktopTek::implementation
 		HighlightDetectedFacesAsync(args.ResultFrame().DetectedFaces());
 	}
 
-	IAsyncOperation<SoftwareBitmap> GetCroppedBitmapAsync(SoftwareBitmap softwareBitmap, BitmapBounds bitmapBound)
+	IAsyncOperation<SoftwareBitmap> GetCroppedBitmapAsync(SoftwareBitmap softwareBitmap,
+		unsigned int startPointX, unsigned int startPointY,
+		unsigned int width, unsigned int height)
 	{
 		InMemoryRandomAccessStream stream;
 		BitmapEncoder encoder = co_await BitmapEncoder::CreateAsync(BitmapEncoder::BmpEncoderId(), stream);
 
 		encoder.SetSoftwareBitmap(softwareBitmap);
+
+		auto bitmapBound = BitmapBounds();
+		bitmapBound.X = startPointX;
+		bitmapBound.Y = startPointY;
+		bitmapBound.Width = width;
+		bitmapBound.Height = height;
 
 		encoder.BitmapTransform().Bounds(bitmapBound);
 
@@ -133,78 +144,77 @@ namespace winrt::DesktopTek::implementation
 		return res;
 	}
 
-	IAsyncAction MainPage::processFace(MediaFrameReference const &frame,
+	IAsyncAction MainPage::processFace(SoftwareBitmap softwareBitmap,
 		BitmapBounds const &face)
 	{
-		co_await winrt::resume_foreground::resume_foreground(FacePreview().Dispatcher());
-		auto videoFrame = frame.VideoMediaFrame();
-		auto videoFormat = videoFrame.VideoFormat();
-		auto softwareBitmap = videoFrame.SoftwareBitmap();
 
 		if (softwareBitmap == nullptr)
 			return;
 
-		SoftwareBitmap croppedBitmap = co_await GetCroppedBitmapAsync(softwareBitmap, face);
+		SoftwareBitmap croppedBitmap = co_await GetCroppedBitmapAsync(softwareBitmap, face.X, face.Y,
+			face.Width, face.Height);
 
 		SoftwareBitmap displayableImage = SoftwareBitmap::Convert(croppedBitmap,
 			BitmapPixelFormat::Bgra8,
 			BitmapAlphaMode::Premultiplied);
-		auto source = Media::Imaging::SoftwareBitmapSource();
 
-		co_await source.SetBitmapAsync(displayableImage);
-		FacePreview().Source(source);
+	/*	m_faceBuffer.GetMatchingImage(displayableImage);*/
 	}
 
 	IAsyncAction MainPage::HighlightDetectedFacesAsync(Windows::Foundation::Collections::IVectorView<winrt::Windows::Media::FaceAnalysis::DetectedFace> faces)
 	{
-		m_propertiesLock.lock();
-		auto frameCopy = m_latestFrame;
-		m_propertiesLock.unlock();
-		co_await winrt::resume_foreground::resume_foreground(FacesCanvas().Dispatcher());
+		//co_await winrt::resume_background();
 
+		//if (faces.Size() == 0)
+		//	co_return;
+
+		//m_faceBuffer.GetMatchingImage(std::move(m_latestBitmap));
+		//m_latestBitmap = nullptr;
+
+		//co_await winrt::resume_foreground::resume_foreground(FacesCanvas().Dispatcher());
 
 		// Remove any existing rectangles from previous events
-		FacesCanvas().Children().Clear();
+		//FacesCanvas().Children().Clear();
 
-		// For each detected face
-		for (unsigned int i = 0; i < faces.Size(); i++)
-		{
-			auto faceBoxInPreviewCoordinates = faces.GetAt(i).FaceBox();
+		/*auto detectedFace = faces.GetAt(0);
 
-			faceBoxInPreviewCoordinates.X -= 60;
-			faceBoxInPreviewCoordinates.Y -= 60;
-			faceBoxInPreviewCoordinates.Width += 120;
-			faceBoxInPreviewCoordinates.Height += 120;
+		auto faceBoxInPreviewCoordinates = detectedFace.FaceBox();
 
-			faceBoxInPreviewCoordinates.X = max(faceBoxInPreviewCoordinates.X, 0);
-			faceBoxInPreviewCoordinates.Y = max(faceBoxInPreviewCoordinates.Y, 0);
+		faceBoxInPreviewCoordinates.X -= 60;
+		faceBoxInPreviewCoordinates.Y -= 100;
+		faceBoxInPreviewCoordinates.Width += 120;
+		faceBoxInPreviewCoordinates.Height += 160;
 
-			processFace(frameCopy, faceBoxInPreviewCoordinates);
-			// Face coordinate units are preview resolution pixels, which can be a different scale from our display resolution, so a conversion may be necessary
-			Windows::UI::Xaml::Shapes::Rectangle faceBoundingBox = ConvertPreviewToUiRectangle(faceBoxInPreviewCoordinates);
+		faceBoxInPreviewCoordinates.X = std::max(faceBoxInPreviewCoordinates.X, 0u);
+		faceBoxInPreviewCoordinates.Y = std::max(faceBoxInPreviewCoordinates.Y, 0u);*/
 
-			// Set bounding box stroke properties
-			faceBoundingBox.StrokeThickness(10);
+		/*co_await processFace(m_latestBitmap, faceBoxInPreviewCoordinates);*/
 
-			// Highlight the first face in the set
-			faceBoundingBox.Stroke((i == 0 ? SolidColorBrush(Windows::UI::Colors::Blue()) : SolidColorBrush(Windows::UI::Colors::DeepSkyBlue())));
+		//// Face coordinate units are preview resolution pixels, which can be a different scale from our display resolution, so a conversion may be necessary
+		//Windows::UI::Xaml::Shapes::Rectangle faceBoundingBox = ConvertPreviewToUiRectangle(faceBoxInPreviewCoordinates);
 
-			std::wstringstream str;
-			str << L"Got a new rectangle at position " << faceBoundingBox.Margin().Left << L" " << faceBoundingBox.Margin().Top
-				<< " with size " << faceBoundingBox.Width() << " " << faceBoundingBox.Height() << std::endl;
-			WriteLine(str.str().c_str());
+		//// Set bounding box stroke properties
+		//faceBoundingBox.StrokeThickness(10);
 
-			// Add grid to canvas containing all face UI objects
-			FacesCanvas().Children().Append(faceBoundingBox);
-		}
+		//// Highlight the first face in the set
+		//faceBoundingBox.Stroke(SolidColorBrush(Windows::UI::Colors::DeepSkyBlue()));
 
-		// Update the face detection bounding box canvas orientation
-		SetFacesCanvasRotation();
+		//std::wstringstream str;
+		//str << L"Got a new rectangle at position " << faceBoundingBox.Margin().Left << L" " << faceBoundingBox.Margin().Top
+		//	<< " with size " << faceBoundingBox.Width() << " " << faceBoundingBox.Height() << std::endl;
+		//WriteLine(str.str().c_str());
 
-		std::wstringstream str;
-		str << L"Got Canvas size " << FacesCanvas().Width() << L" " << FacesCanvas().Height()
-			<< " with pos " << FacesCanvas().Margin().Left << " " << FacesCanvas().Margin().Top << std::endl;
-		WriteLine(str.str().c_str());
+		//// Add grid to canvas containing all face UI objects
+		//FacesCanvas().Children().Append(faceBoundingBox);
+
+		//// Update the face detection bounding box canvas orientation
+		//SetFacesCanvasRotation();
+
+		//std::wstringstream str;
+		//str << L"Got Canvas size " << FacesCanvas().Width() << L" " << FacesCanvas().Height()
+		//	<< " with pos " << FacesCanvas().Margin().Left << " " << FacesCanvas().Margin().Top << std::endl;
+		//WriteLine(str.str().c_str());
+		co_return;
 	}
 
 	Shapes::Rectangle MainPage::ConvertPreviewToUiRectangle(BitmapBounds faceBoxInPreviewCoordinates)
@@ -303,18 +313,29 @@ namespace winrt::DesktopTek::implementation
 
 	void MainPage::WriteLine(winrt::hstring str)
 	{
-#ifdef _DEBUG
+		//#ifdef _DEBUG
 		OutputDebugString(str.c_str());
-#endif
+		//#endif
 	}
 
 	void MainPage::OnFrameArrived(MediaFrameReader const &sender, MediaFrameArrivedEventArgs const &args)
 	{
-		if (MediaFrameReference frame = sender.TryAcquireLatestFrame())
+		static int frameCount = 0;
+		
+		frameCount++;
+		if (frameCount == 60)
 		{
+			frameCount = 0;
+			MediaFrameReference frame = sender.TryAcquireLatestFrame();
+			if (frame == nullptr)
+				return;
 			std::lock_guard<std::shared_mutex> lock(m_propertiesLock);
-			WriteLine(L"Got Frame !\n");
-			m_latestFrame = frame;
+			auto videoFrame = frame.VideoMediaFrame();
+			if (videoFrame != nullptr){
+				m_latestBitmap = videoFrame.SoftwareBitmap();
+				if (m_latestBitmap != nullptr && m_faceBuffer.isProcessing() == false)
+					m_faceBuffer.GetMatchingImagesAsync(std::move(m_latestBitmap));
+			}			
 		}
 	}
 }

@@ -15,9 +15,5 @@
             <!--For more details, see SetFacesCanvasRotation-->
             <Canvas Name="FacesCanvas" RenderTransformOrigin="0.5,0.5"/>
         </Canvas>
-
-        <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center">
-            <Image Name="FacePreview" MaxHeight="300" MaxWidth="200" Margin="10,40" Source="Assets/TestPicture.jpg"/>
-        </StackPanel>
     </Grid>
 </Page>

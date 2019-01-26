@@ -15,11 +15,13 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="MainPage.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="Common\FacesBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="MainPage.h" />
+    <ClInclude Include="Common\FacesBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Wide310x150Logo.scale-200.png">
@@ -43,7 +45,9 @@
     <Image Include="Assets\LockScreenLogo.scale-200.png">
       <Filter>Assets</Filter>
     </Image>
-    <Image Include="Assets\TestPicture.jpg" />
+    <Image Include="Assets\Images\louis.ventre%40epitech.eu.jpg" />
+    <Image Include="Assets\Images\fabien.viollet%40epitech.eu.JPG" />
+    <Image Include="Assets\Images\papa.jpg" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
@@ -51,9 +55,8 @@
   <ItemGroup>
     <None Include="DesktopTek_TemporaryKey.pfx" />
     <None Include="packages.config" />
-    <None Include="Assets\shape_predictor_68_face_landmarks.dat">
-      <Filter>Assets</Filter>
-    </None>
+    <None Include="Assets\dlib_face_recognition_resnet_model_v1.dat" />
+    <None Include="Assets\shape_predictor_5_face_landmarks.dat" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

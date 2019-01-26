@@ -5,6 +5,7 @@
 #pragma once
 
 #include "MainPage.g.h"
+#include "Common/FacesBuffer.h"
 
 using namespace winrt;
 using namespace Windows::Media;
@@ -21,9 +22,9 @@ namespace winrt::DesktopTek::implementation
 		void OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs const &e);
 
 	private:
-		IAsyncAction MainPage::InitializeCameraAsync();
-		IAsyncAction MainPage::StartPreviewAsync();
-		IAsyncAction MainPage::CreateFaceDetectionEffectAsync();
+		IAsyncAction InitializeCameraAsync();
+		IAsyncAction StartPreviewAsync();
+		IAsyncAction CreateFaceDetectionEffectAsync();
 
 		IAsyncAction HighlightDetectedFacesAsync(IVectorView<winrt::Windows::Media::FaceAnalysis::DetectedFace> faces);
 
@@ -37,9 +38,8 @@ namespace winrt::DesktopTek::implementation
 		void SetFacesCanvasRotation();
 		void WriteLine(winrt::hstring str);
 		void OnFrameArrived(MediaFrameReader const &sender, MediaFrameArrivedEventArgs const &args);
-		IAsyncAction processFace(Capture::Frames::MediaFrameReference const &frame,
+		IAsyncAction processFace(Windows::Graphics::Imaging::SoftwareBitmap softwareBitmap,
 			Windows::Graphics::Imaging::BitmapBounds const &face);
-
 
 		//Camera device interraction
 		Windows::Media::Capture::MediaCapture m_mediaCapture;
@@ -54,9 +54,11 @@ namespace winrt::DesktopTek::implementation
 		Windows::System::Display::DisplayRequest	m_displayRequest;
 		bool m_isPreviewing;
 		std::shared_mutex							m_propertiesLock;
-		MediaFrameReference							m_latestFrame;
+		Windows::Graphics::Imaging::SoftwareBitmap	m_latestBitmap = nullptr;
 
 		winrt::event_token							m_faceDetectedEventToken;
+
+		FacesBuffer									m_faceBuffer;
     };
 }
 

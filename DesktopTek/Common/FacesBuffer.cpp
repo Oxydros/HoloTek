@@ -13,6 +13,7 @@ using namespace Windows::Storage::Streams;
 using namespace std;
 using namespace dlib;
 
+//Heavely based on http://dlib.net/dnn_face_recognition_ex.cpp.html
 namespace winrt::DesktopTek::implementation
 {
 	FacesBuffer::FacesBuffer(std::wstring imagesFolder) :
@@ -25,6 +26,9 @@ namespace winrt::DesktopTek::implementation
 	{
 	}
 
+	//Fetch dat files here
+	//http://dlib.net/files/shape_predictor_5_face_landmarks.dat.bz2
+	//http://dlib.net/files/dlib_face_recognition_resnet_model_v1.dat.bz2
 	void FacesBuffer::InitializeDLib()
 	{
 		deserialize("./Assets/shape_predictor_5_face_landmarks.dat") >> m_sp;

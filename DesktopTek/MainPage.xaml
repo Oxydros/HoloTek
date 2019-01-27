@@ -9,11 +9,5 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <CaptureElement Name="PreviewControl" Stretch="Uniform"/>
-        <Canvas>
-            <!--Canvas that will host the face detection bounding boxes, will share the same bounds as the preview within the CaptureElement-->
-            <!--It's contained inside of another canvas to allow for adjusting its size and position after applying a RenderTransform -->
-            <!--For more details, see SetFacesCanvasRotation-->
-            <Canvas Name="FacesCanvas" RenderTransformOrigin="0.5,0.5"/>
-        </Canvas>
     </Grid>
 </Page>

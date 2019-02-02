@@ -8,7 +8,9 @@
 #include "3D\Resources\DeviceResources.h"
 #include "3D\Entities\Common\EmptyEntity.h"
 #include "3D\Entities\GUI\Menus\MainMenu.h"
+#include "3D\Entities\GUI\Menus\ActivityMenu.h"
 #include "3D\Input\InteractionListener.h"
+#include "API/IntraAPI.h"
 
 ///-------------------------------------------------------------------------------------------------
 // namespace: HoloLensClient
@@ -76,6 +78,14 @@ namespace HoloTek
 		/// <summary>	Kills this object. </summary>
 		void kill() { m_alive = false; }
 	public:
+		inline void GoToMainMenu() {
+			m_mainMenu->setVisible(true);
+			m_activityMenu->setVisible(false);
+		};
+		inline void GoToActivityMenu() {
+			m_mainMenu->setVisible(false);
+			m_activityMenu->setVisible(true);
+		};
 
 		///-------------------------------------------------------------------------------------------------
 		/// <summary>	Gets device resources. </summary>
@@ -91,6 +101,7 @@ namespace HoloTek
 
 	public:
 		MainMenu &getMainMenu() const { return *m_mainMenu; }
+		ActivityMenu &getActivityMenu() const { return *m_activityMenu; }
 		IEntity	 &getCursor() const { return *m_cursor; }
 
 		///-------------------------------------------------------------------------------------------------
@@ -138,10 +149,13 @@ namespace HoloTek
 
 		/// <summary>	The main menu. </summary>
 		MainMenu														*m_mainMenu{ nullptr };
+		ActivityMenu													*m_activityMenu{ nullptr };
 		/// <summary>	User cursor (head direction). </summary>
 		IEntity															*m_cursor{ nullptr };
 		/// <summary>	Entity currently focused (nearest) </summary>
 		IEntity															*m_focusedEntity{ nullptr };
+
+		IntraAPI														m_api;
 	};
 }
 

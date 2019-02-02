@@ -195,6 +195,8 @@
     <ClInclude Include="3D\Utility\Collision.h" />
     <ClInclude Include="3D\Utility\DirectXHelper.h" />
     <ClInclude Include="3D\Utility\StepTimer.h" />
+    <ClInclude Include="3D\Entities\GUI\Menus\ActivityMenu.h" />
+    <ClInclude Include="API\IntraAPI.h" />
     <ClInclude Include="AppView.h" />
     <ClInclude Include="Content\FaceTrackerProcessor.h" />
     <ClInclude Include="Content\NV12VideoTexture.h" />
@@ -226,6 +228,8 @@
     <ClCompile Include="3D\Scene\HolographicScene.cpp" />
     <ClCompile Include="3D\Utility\CFW1StateSaver.cpp" />
     <ClCompile Include="3D\Utility\DirectXHelper.cpp" />
+    <ClCompile Include="3D\Entities\GUI\Menus\ActivityMenu.cpp" />
+    <ClCompile Include="API\IntraAPI.cpp" />
     <ClCompile Include="AppView.cpp" />
     <ClCompile Include="Content\FaceTrackerProcessor.cpp" />
     <ClCompile Include="Content\NV12VideoTexture.cpp" />

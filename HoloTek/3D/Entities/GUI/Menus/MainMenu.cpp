@@ -16,29 +16,30 @@ HoloTek::MainMenu::~MainMenu()
 {
 }
 
-void HoloTek::MainMenu::InitializeMenu()
+std::future<void> HoloTek::MainMenu::InitializeMenuAsync()
 {
-	auto m_background = std::make_unique<Panel>(m_devicesResources, m_scene, float2(0.65f, 0.35f), float4(0.7f, 0.1f, 0.2f, 0.6f));
-	m_background->SetRelativePosition({ 0.0f, 0.0f, 0.0f });
+	auto safeScene{ m_scene };
+
+	auto background = std::make_unique<Panel>(m_devicesResources, m_scene, float2(0.65f, 0.35f), float4(0.7f, 0.1f, 0.2f, 0.6f));
+	background->SetRelativePosition({ 0.0f, 0.0f, 0.0f });
 
 	auto buttonCube = std::make_unique<Button2D>(m_devicesResources, m_scene, float2(0.15f, 0.1f));
-	buttonCube->setLabel(L"Spawn cube");
+	buttonCube->setLabel(L"This is home");
 
 	auto buttonSphere = std::make_unique<Button2D>(m_devicesResources, m_scene, float2(0.15f, 0.1f));
 	buttonSphere->setLabel(L"Spawn sphere");
 
-	auto safeScene{ m_scene };
-
 	auto buttonLeave = std::make_unique<Button2D>(m_devicesResources, m_scene, float2(0.15f, 0.1f));
-	buttonLeave->setLabel(L"Leave 3D");
+	buttonLeave->setLabel(L"Go to activity");
 	buttonLeave->SetAirTapCallback([safeScene](Spatial::SpatialGestureRecognizer const &, Spatial::SpatialTappedEventArgs const &) {
-		TRACE("Killing the scene" << std::endl);
-		safeScene->kill();
+		TRACE("Switching menu" << std::endl);
+		safeScene->GoToActivityMenu();
 	});
 
-	m_background->AddGUIEntity(std::move(buttonCube), { -0.1f, 0.1f });
-	m_background->AddGUIEntity(std::move(buttonSphere), { 0.1f, 0.1f });
-	m_background->AddGUIEntity(std::move(buttonLeave), { -0.1f, -0.1f });
+	background->AddGUIEntity(std::move(buttonCube), { -0.1f, 0.1f });
+	background->AddGUIEntity(std::move(buttonSphere), { 0.1f, 0.1f });
+	background->AddGUIEntity(std::move(buttonLeave), { -0.1f, -0.1f });
 
-	AddChild(std::move(m_background));
+	AddChild(std::move(background));
+	co_return;
 }

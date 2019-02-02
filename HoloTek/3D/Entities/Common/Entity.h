@@ -27,7 +27,7 @@ namespace HoloTek
 		void Render() override;
 		void kill() override;
 		bool isDead() const override;
-		void setVisible(bool visibility);
+		void setVisible(bool visibility) override;
 		bool isVisible() const override { return (m_visible); }
 		bool isRoot() const override { return (m_isRoot); }
 		bool IgnoreInGaze() const { return (m_ignoreInGaze); }

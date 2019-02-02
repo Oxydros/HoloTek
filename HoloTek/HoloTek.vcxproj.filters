@@ -77,6 +77,8 @@
     <ClCompile Include="3D\Entities\Common\InteractableEntity.cpp" />
     <ClCompile Include="3D\Scene\HolographicScene.cpp" />
     <ClCompile Include="3D\Objects\Mesh\3DFormes\ColoredCube.cpp" />
+    <ClCompile Include="API\IntraAPI.cpp" />
+    <ClCompile Include="3D\Entities\GUI\Menus\ActivityMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -131,6 +133,8 @@
     <ClInclude Include="3D\Scene\HolographicScene.h" />
     <ClInclude Include="3D\Input\InteractionListener.h" />
     <ClInclude Include="3D\Objects\Mesh\3DFormes\ColoredCube.h" />
+    <ClInclude Include="API\IntraAPI.h" />
+    <ClInclude Include="3D\Entities\GUI\Menus\ActivityMenu.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

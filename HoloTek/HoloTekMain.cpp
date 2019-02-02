@@ -63,11 +63,11 @@ winrt::Windows::Foundation::IAsyncAction HoloTekMain::SetHolographicSpace(Hologr
 	UnregisterHolographicEventHandlers();
 
 	m_holoScene = std::make_shared<HolographicScene>(m_deviceResources);
+	m_spatialInputHandler = std::make_unique<SpatialInputHandler>(m_holoScene.get());
+
 	co_await m_holoScene->InitializeAsync();
 
 	m_holographicSpace = holographicSpace;
-
-	m_spatialInputHandler = std::make_unique<SpatialInputHandler>(m_holoScene.get());
 
 	// Use the default SpatialLocator to track the motion of the device.
 	m_locator = SpatialLocator::GetDefault();

@@ -2,8 +2,10 @@
 #include "3D\Scene\HolographicScene.h"
 #include "3D\Entities\CursorEntity.h"
 
+#include "API/IntraAPI.h"
+
 HoloTek::HolographicScene::HolographicScene(std::shared_ptr<DX::DeviceResources> deviceResources)
-	: m_deviceResources(deviceResources)
+	: m_deviceResources(deviceResources), m_api("XXXXXXXXXXX")
 {
 }
 
@@ -31,16 +33,34 @@ std::future<void> HoloTek::HolographicScene::InitializeAsync()
 	auto mainMenu = std::make_unique<MainMenu>(m_deviceResources, safeScene);
 	mainMenu->SetRelativePosition({ 0.0f, 0.0f, -3.0f });
 
-	mainMenu->InitializeMenu();
+	co_await mainMenu->InitializeMenuAsync();
 	m_mainMenu = mainMenu.get();
 
 	addEntity(std::move(mainMenu));
+
+	auto actiMenu = std::make_unique<ActivityMenu>(m_deviceResources, safeScene, m_api);
+	actiMenu->SetRelativePosition({ 0.0f, 0.0f, -3.0f });
+
+	co_await actiMenu->InitializeMenuAsync();
+	actiMenu->setVisible(false);
+	m_activityMenu = actiMenu.get();
+
+	addEntity(std::move(actiMenu));
+
+	auto status = co_await m_api.LoginAsync();
+	if (status != winrt::Windows::Web::Http::HttpStatusCode::Ok)
+	{
+		TRACE("Logged in status " << "NOT OK" << std::endl);
+	}
+	else {
+		TRACE("Logged in status " << "NICKEL" << std::endl);
+	}
 	co_return;
 }
 
 void HoloTek::HolographicScene::InteractionDetectedEvent(winrt::Windows::UI::Input::Spatial::SpatialInteractionManager const &sender,
 	winrt::Windows::UI::Input::Spatial::SpatialInteractionDetectedEventArgs const &args)
-{	
+{
 	if (m_focusedEntity)
 		m_focusedEntity->CaptureInteraction(args.Interaction());
 }

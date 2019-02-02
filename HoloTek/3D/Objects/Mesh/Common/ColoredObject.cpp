@@ -115,8 +115,6 @@ void ColoredObject::Render()
 	// Only render when vertex and mesh are loaded
 	if (!m_loadingComplete)
 		return;
-
-	TRACE("Rending colored object" << std::endl);
 	const auto context = m_deviceResources->GetD3DDeviceContext();
 
 	m_modelConstantBufferData.color = XMFLOAT4(m_color.x, m_color.y, m_color.z, m_color.w);

@@ -11,8 +11,9 @@
 
 #pragma once
 
-#include "3D/Utility/StepTimer.h"
-#include "3D/Resources/DeviceResources.h"
+#include "3D\Utility\StepTimer.h"
+#include "3D\Input\SpatialInputHandler.h"
+#include "3D\Resources\DeviceResources.h"
 
 // Updates, renders, and presents holographic content using Direct3D.
 namespace HoloTek
@@ -105,6 +106,7 @@ namespace HoloTek
 		//std::shared_ptr<TextRenderer>                                   m_textRenderer;
 		//std::shared_ptr<NV12VideoTexture>                               m_videoTexture;
 		std::shared_ptr<HolographicScene>								m_holoScene;
+		std::shared_ptr<SpatialInputHandler>                            m_spatialInputHandler;
 
 		// Used to avoid redundant copying of frames to our DirectX texture.
 		int64_t                                                         m_previousFrameTimestamp = 0;

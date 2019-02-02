@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10" xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4" IgnorableNamespaces="uap mp uap3 iot uap4">
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10" xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4" xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6" IgnorableNamespaces="uap mp uap3 iot uap4 uap6">
   <Identity Name="e58f9d7f-3e96-4ba4-8ee9-ccf3aac9aec8" Publisher="CN=Louis VENTRE" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="e58f9d7f-3e96-4ba4-8ee9-ccf3aac9aec8" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
@@ -33,6 +33,7 @@
     <iot:Capability Name="systemManagement" />
     <uap:Capability Name="videosLibrary" />
     <uap4:Capability Name="userDataTasks" />
+    <uap6:Capability Name="graphicsCapture" />
     <DeviceCapability Name="gazeInput" />
     <DeviceCapability Name="webcam" />
     <DeviceCapability Name="lowLevel" />

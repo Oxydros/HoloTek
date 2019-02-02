@@ -67,6 +67,8 @@ winrt::Windows::Foundation::IAsyncAction HoloTekMain::SetHolographicSpace(Hologr
 
 	m_holographicSpace = holographicSpace;
 
+	m_spatialInputHandler = std::make_unique<SpatialInputHandler>(m_holoScene.get());
+
 	// Use the default SpatialLocator to track the motion of the device.
 	m_locator = SpatialLocator::GetDefault();
 
@@ -396,7 +398,6 @@ bool HoloTekMain::Render(winrt::Windows::Graphics::Holographic::HolographicFrame
 			// Render world-locked content only when positional tracking is active.
 			if (cameraActive)
 			{
-				TRACE("Rendering in main" << std::endl)
 				m_holoScene->Render();
 				//// If we are tracking any faces, then we render the cube over their head, and the video image on the quad.
 				//if (m_trackingFaces)

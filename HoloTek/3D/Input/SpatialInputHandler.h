@@ -12,8 +12,6 @@ namespace HoloTek
         SpatialInputHandler(InteractionListener *listener);
         ~SpatialInputHandler();
 
-        winrt::Windows::UI::Input::Spatial::SpatialInteractionSourceState CheckForInput();
-
     private:
         // Interaction event handler.
         void OnInteractionDetected(

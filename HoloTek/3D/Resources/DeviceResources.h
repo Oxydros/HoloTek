@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "CameraResources.h"
+#include "3D/Resources/CameraResources.h"
 
 namespace DX
 {
@@ -96,7 +96,7 @@ namespace DX
 	{
 	public:
 		Resource(std::shared_ptr<DeviceResources> deviceResources)
-			: m_deviceResources(std::move(deviceResources))
+			: m_deviceResources(deviceResources)
 		{}
 
 		virtual ~Resource() = default;
@@ -116,6 +116,17 @@ namespace DX
 
 		// Then we initialize the resources asynchronously
 		co_return target->CreateDeviceDependentResourcesAsync();
+	}
+
+	template<typename ObjectType, typename... Args>
+	std::future<std::unique_ptr<ObjectType>> CreateAndInitializeUniqueAsync(Args&&... args)
+	{
+		// Forward the arguments to std::make_shared, which will call the ObjectType's matching constructor
+		auto target = std::make_unique<ObjectType>(std::forward<Args>(args)...);
+
+		// Then we initialize the resources asynchronously
+		co_await target->CreateDeviceDependentResourcesAsync();
+		co_return target;
 	}
 }
 

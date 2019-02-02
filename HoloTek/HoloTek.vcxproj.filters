@@ -14,24 +14,6 @@
     <Filter Include="Content\Shaders">
       <UniqueIdentifier>f21ebb78-426a-4133-bc47-2a82dea29ab8</UniqueIdentifier>
     </Filter>
-    <ClInclude Include="Common\DirectXHelper.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\StepTimer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\DeviceResources.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClCompile Include="Common\DeviceResources.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClInclude Include="Common\CameraResources.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClCompile Include="Common\CameraResources.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <Image Include="Assets\LockScreenLogo.scale-200.png">
       <Filter>Assets</Filter>
     </Image>
@@ -58,9 +40,6 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="HoloTekMain.cpp" />
     <ClCompile Include="AppView.cpp" />
-    <ClCompile Include="Content\SpatialInputHandler.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
     <ClCompile Include="Content\SpinningCubeRenderer.cpp">
       <Filter>Content</Filter>
     </ClCompile>
@@ -73,24 +52,37 @@
     <ClCompile Include="Content\QuadRenderer.cpp">
       <Filter>Content</Filter>
     </ClCompile>
-    <ClCompile Include="Content\TextRenderer.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
     <ClCompile Include="Content\VideoFrameProcessor.cpp">
       <Filter>Content</Filter>
     </ClCompile>
+    <ClCompile Include="3D\Objects\GUI\Text\TextObject.cpp" />
+    <ClCompile Include="3D\Input\SpatialInputHandler.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
+    <ClCompile Include="3D\Utility\CFW1StateSaver.cpp" />
+    <ClCompile Include="3D\Resources\CameraResources.cpp" />
+    <ClCompile Include="3D\Resources\DeviceResources.cpp" />
+    <ClCompile Include="3D\Objects\GUI\Text\TextRenderer.cpp" />
+    <ClCompile Include="3D\Utility\DirectXHelper.cpp" />
+    <ClCompile Include="3D\Objects\Mesh\2DFormes\ColoredCircle.cpp" />
+    <ClCompile Include="3D\Objects\Mesh\2DFormes\ColoredRectangle.cpp" />
+    <ClCompile Include="3D\Objects\Mesh\Common\ColoredObject.cpp" />
+    <ClCompile Include="3D\Objects\GUI\ButtonObject.cpp" />
+    <ClCompile Include="3D\Entities\CursorEntity.cpp" />
+    <ClCompile Include="3D\Entities\GUI\Widgets\Button2D.cpp" />
+    <ClCompile Include="3D\Entities\GUI\Widgets\Button3D.cpp" />
+    <ClCompile Include="3D\Entities\GUI\Widgets\Panel.cpp" />
+    <ClCompile Include="3D\Entities\GUI\Menus\MainMenu.cpp" />
+    <ClCompile Include="3D\Entities\Common\Entity.cpp" />
+    <ClCompile Include="3D\Entities\Common\InteractableEntity.cpp" />
+    <ClCompile Include="3D\Scene\HolographicScene.cpp" />
+    <ClCompile Include="3D\Objects\Mesh\3DFormes\ColoredCube.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="HoloTekMain.h" />
     <ClInclude Include="AppView.h" />
-    <ClInclude Include="Content\SpatialInputHandler.h">
-      <Filter>Content</Filter>
-    </ClInclude>
     <ClInclude Include="Content\SpinningCubeRenderer.h">
-      <Filter>Content</Filter>
-    </ClInclude>
-    <ClInclude Include="Content\ShaderStructures.h">
       <Filter>Content</Filter>
     </ClInclude>
     <ClInclude Include="Content\FaceTrackerProcessor.h">
@@ -102,12 +94,43 @@
     <ClInclude Include="Content\QuadRenderer.h">
       <Filter>Content</Filter>
     </ClInclude>
-    <ClInclude Include="Content\TextRenderer.h">
-      <Filter>Content</Filter>
-    </ClInclude>
     <ClInclude Include="Content\VideoFrameProcessor.h">
       <Filter>Content</Filter>
     </ClInclude>
+    <ClInclude Include="3D\Objects\GUI\Text\TextObject.h" />
+    <ClInclude Include="3D\Input\SpatialInputHandler.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="3D\Shaders\ShaderStructures.h">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="3D\Utility\StepTimer.h" />
+    <ClInclude Include="3D\Utility\DirectXHelper.h" />
+    <ClInclude Include="3D\Utility\CFW1StateSaver.h" />
+    <ClInclude Include="3D\Utility\Collision.h" />
+    <ClInclude Include="3D\Resources\CameraResources.h" />
+    <ClInclude Include="3D\Resources\DeviceResources.h" />
+    <ClInclude Include="3D\Objects\GUI\Text\TextRenderer.h" />
+    <ClInclude Include="3D\Objects\GUI\Text\ATextObject.h" />
+    <ClInclude Include="3D\Objects\Common\AObject.h" />
+    <ClInclude Include="3D\Objects\Mesh\2DFormes\ColoredCircle.h" />
+    <ClInclude Include="3D\Objects\Mesh\2DFormes\ColoredRectangle.h" />
+    <ClInclude Include="3D\Objects\Mesh\Common\ColoredObject.h" />
+    <ClInclude Include="3D\Objects\Mesh\Interfaces\AColoredObject.h" />
+    <ClInclude Include="3D\Objects\GUI\ButtonObject.h" />
+    <ClInclude Include="3D\Entities\CursorEntity.h" />
+    <ClInclude Include="3D\Entities\GUI\GUIEntity.h" />
+    <ClInclude Include="3D\Entities\GUI\Widgets\Button2D.h" />
+    <ClInclude Include="3D\Entities\GUI\Widgets\Button3D.h" />
+    <ClInclude Include="3D\Entities\GUI\Widgets\Panel.h" />
+    <ClInclude Include="3D\Entities\GUI\Menus\MainMenu.h" />
+    <ClInclude Include="3D\Entities\Common\EmptyEntity.h" />
+    <ClInclude Include="3D\Entities\Common\Entity.h" />
+    <ClInclude Include="3D\Entities\Common\IEntity.h" />
+    <ClInclude Include="3D\Entities\Common\InteractableEntity.h" />
+    <ClInclude Include="3D\Scene\HolographicScene.h" />
+    <ClInclude Include="3D\Input\InteractionListener.h" />
+    <ClInclude Include="3D\Objects\Mesh\3DFormes\ColoredCube.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -119,32 +142,40 @@
     <None Include="HoloTek_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Content\Shaders\CubeGeometryShader.hlsl">
+    <FxCompile Include="3D\Shaders\Geometry\CubeGeometryShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\CubePixelShader.hlsl">
+    <FxCompile Include="3D\Shaders\Pixel\CubePixelShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\CubeVertexShader.hlsl">
+    <FxCompile Include="3D\Shaders\Vertex\CubeVertexShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\CubeVPRTVertexShader.hlsl">
+    <FxCompile Include="3D\Shaders\Vertex\CubeVPRTVertexShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\QuadGeometryShader.hlsl">
+    <FxCompile Include="3D\Shaders\Geometry\QuadGeometryShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\QuadPixelShaderNV12.hlsl">
+    <FxCompile Include="3D\Shaders\Pixel\QuadPixelShaderNV12.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\QuadPixelShaderRGB.hlsl">
+    <FxCompile Include="3D\Shaders\Pixel\QuadPixelShaderRGB.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\QuadVertexShader.hlsl">
+    <FxCompile Include="3D\Shaders\Vertex\QuadVertexShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Content\Shaders\QuadVPRTVertexShader.hlsl">
+    <FxCompile Include="3D\Shaders\Vertex\QuadVPRTVertexShader.hlsl">
       <Filter>Content\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="3D\Shaders\Vertex\VertexShaderColor.hlsl" />
+    <FxCompile Include="3D\Shaders\Vertex\VPRTVertexShader.hlsl" />
+    <FxCompile Include="3D\Shaders\Pixel\PixelShader.hlsl" />
+    <FxCompile Include="3D\Shaders\Geometry\GeometryShader.hlsl" />
+    <FxCompile Include="3D\Shaders\Geometry\GeometryShaderTexture.hlsl" />
+    <FxCompile Include="3D\Shaders\Pixel\PixelShaderTexture.hlsl" />
+    <FxCompile Include="3D\Shaders\Vertex\VertexShaderTexture.hlsl" />
+    <FxCompile Include="3D\Shaders\Vertex\VPRTVertexShaderTexture.hlsl" />
   </ItemGroup>
 </Project>

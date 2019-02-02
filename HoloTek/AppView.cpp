@@ -8,7 +8,6 @@ using namespace std::placeholders;
 using namespace winrt::Windows::ApplicationModel;
 using namespace winrt::Windows::ApplicationModel::Activation;
 using namespace winrt::Windows::ApplicationModel::Core;
-using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Graphics::Holographic;
 using namespace winrt::Windows::UI::Core;
 
@@ -73,7 +72,7 @@ void AppView::SetWindow(CoreWindow const& window)
     m_deviceResources->SetHolographicSpace(m_holographicSpace);
 
     // The main class uses the holographic space for updates and rendering.
-    m_main->SetHolographicSpace(m_holographicSpace).get();
+    m_main->SetHolographicSpace(m_holographicSpace);
 }
 
 // The Load method can be used to initialize scene resources or to load a

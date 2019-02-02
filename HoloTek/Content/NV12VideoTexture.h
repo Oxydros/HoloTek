@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "Common\DeviceResources.h"
+#include "3D/Resources/DeviceResources.h"
 
 namespace HoloTek
 {

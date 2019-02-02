@@ -11,19 +11,21 @@
 
 #pragma once
 
-#include "Common\StepTimer.h"
-#include "Common\DeviceResources.h"
+#include "3D/Utility/StepTimer.h"
+#include "3D/Resources/DeviceResources.h"
 
 // Updates, renders, and presents holographic content using Direct3D.
 namespace HoloTek
 {
-	class VideoFrameProcessor;
-	class FaceTrackerProcessor;
+	//class VideoFrameProcessor;
+	//class FaceTrackerProcessor;
 
-	class QuadRenderer;
-	class SpinningCubeRenderer;
-	class TextRenderer;
-	class NV12VideoTexture;
+	//class QuadRenderer;
+	//class SpinningCubeRenderer;
+	//class TextRenderer;
+	//class NV12VideoTexture;
+
+	class HolographicScene;
 
 	class HoloTekMain : public DX::IDeviceNotify
 	{
@@ -33,7 +35,7 @@ namespace HoloTek
 
 		// Sets the holographic space. This is our closest analogue to setting a new window
 		// for the app.
-		std::future<void> SetHolographicSpace(winrt::Windows::Graphics::Holographic::HolographicSpace const &holographicSpace);
+		winrt::Windows::Foundation::IAsyncAction SetHolographicSpace(winrt::Windows::Graphics::Holographic::HolographicSpace const &holographicSpace);
 
 		// Starts the holographic frame and updates the content.
 		winrt::Windows::Graphics::Holographic::HolographicFrame Update();
@@ -93,15 +95,16 @@ namespace HoloTek
 		winrt::Windows::Perception::Spatial::SpatialLocatorAttachedFrameOfReference m_referenceFrame = nullptr;
 
 
-		// Video and face tracking processors
-		std::shared_ptr<VideoFrameProcessor>                            m_videoFrameProcessor;
-		std::shared_ptr<FaceTrackerProcessor>                           m_faceTrackerProcessor;
+		//// Video and face tracking processors
+		//std::shared_ptr<VideoFrameProcessor>                            m_videoFrameProcessor;
+		//std::shared_ptr<FaceTrackerProcessor>                           m_faceTrackerProcessor;
 
-		// Objects related to rendering/3D models
-		std::shared_ptr<QuadRenderer>                                   m_quadRenderer;
-		std::shared_ptr<SpinningCubeRenderer>                           m_spinningCubeRenderer;
-		std::shared_ptr<TextRenderer>                                   m_textRenderer;
-		std::shared_ptr<NV12VideoTexture>                               m_videoTexture;
+		//// Objects related to rendering/3D models
+		//std::shared_ptr<QuadRenderer>                                   m_quadRenderer;
+		//std::shared_ptr<SpinningCubeRenderer>                           m_spinningCubeRenderer;
+		//std::shared_ptr<TextRenderer>                                   m_textRenderer;
+		//std::shared_ptr<NV12VideoTexture>                               m_videoTexture;
+		std::shared_ptr<HolographicScene>								m_holoScene;
 
 		// Used to avoid redundant copying of frames to our DirectX texture.
 		int64_t                                                         m_previousFrameTimestamp = 0;

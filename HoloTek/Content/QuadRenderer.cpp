@@ -10,8 +10,9 @@
 //*********************************************************
 
 #include "pch.h"
-#include "QuadRenderer.h"
-#include "Common\DirectXHelper.h"
+#include "Content/QuadRenderer.h"
+#include "3D/Resources/DeviceResources.h"
+#include "3D/Utility/DirectXHelper.h"
 
 using namespace HoloTek;
 using namespace Concurrency;
@@ -59,9 +60,9 @@ void QuadRenderer::Update(SpatialPointerPose const &pointerPose, float3 const& o
 		// Scale our 1m quad down to 20cm wide.
 		float4x4 const modelScale = make_float4x4_scale({ 0.2f });
 
-		m_modelConstantBufferData.model = modelScale * modelRotationTranslation;
-		m_modelConstantBufferData.texCoordScale = m_texCoordScale;
-		m_modelConstantBufferData.texCoordOffset = m_texCoordOffset;
+		//m_modelConstantBufferData.model = modelScale * modelRotationTranslation;
+		m_modelConstantBufferData.texCoordScale = XMFLOAT2(m_texCoordScale.x, m_texCoordScale.y);
+		m_modelConstantBufferData.texCoordOffset = XMFLOAT2(m_texCoordOffset.x, m_texCoordOffset.y);
 
 		if (!m_loadingComplete)
 		{
@@ -293,10 +294,10 @@ std::future<void> QuadRenderer::CreateDeviceDependentResourcesAsync()
 	// quad at a comfortable size we made the quad width 0.2 m (20 cm).
 	static const std::array<VertexPositionTex, 4> quadVertices =
 	{ {
-		{ float3(-0.5f,  0.5f, 0.f), float2(0.f, 0.f) },
-		{ float3(0.5f,  0.5f, 0.f), float2(1.f, 0.f) },
-		{ float3(0.5f, -0.5f, 0.f), float2(1.f, 1.f) },
-		{ float3(-0.5f, -0.5f, 0.f), float2(0.f, 1.f) },
+		{ XMFLOAT3(-0.5f,  0.5f, 0.f), XMFLOAT2(0.f, 0.f) },
+		{ XMFLOAT3(0.5f,  0.5f, 0.f), XMFLOAT2(1.f, 0.f) },
+		{ XMFLOAT3(0.5f, -0.5f, 0.f), XMFLOAT2(1.f, 1.f) },
+		{ XMFLOAT3(-0.5f, -0.5f, 0.f), XMFLOAT2(0.f, 1.f) },
 	} };
 
 	D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };

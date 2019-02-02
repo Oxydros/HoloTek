@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "SpinningCubeRenderer.h"
-#include "Common\DirectXHelper.h"
+#include "Content/SpinningCubeRenderer.h"
+#include "3D\Utility\DirectXHelper.h"
 
 using namespace HoloTek;
 using namespace DirectX;
@@ -35,7 +35,7 @@ void SpinningCubeRenderer::Update(DX::StepTimer const& timer)
 	float4x4 const modelRotation = make_float4x4_rotation_y(totalRotation);
 	float4x4 const modelTranslation = make_float4x4_translation(m_position);
 
-	m_modelConstantBufferData.model = modelScale * modelRotation * modelTranslation;
+//	m_modelConstantBufferData.model = modelScale * modelRotation * modelTranslation;
 
 	if (!m_loadingComplete)
 		return;
@@ -209,14 +209,14 @@ std::future<void> SpinningCubeRenderer::CreateDeviceDependentResourcesAsync()
 	// cube at a comfortable size we made the cube width 0.2 m (20 cm).
 	static const std::array<VertexPositionColor, 8> cubeVertices =
 	{ {
-		{ float3(-0.5f, -0.5f, -0.5f), float3(0.0f, 0.0f, 0.0f) },
-		{ float3(-0.5f, -0.5f,  0.5f), float3(0.0f, 0.0f, 1.0f) },
-		{ float3(-0.5f,  0.5f, -0.5f), float3(0.0f, 1.0f, 0.0f) },
-		{ float3(-0.5f,  0.5f,  0.5f), float3(0.0f, 1.0f, 1.0f) },
-		{ float3(0.5f, -0.5f, -0.5f), float3(1.0f, 0.0f, 0.0f) },
-		{ float3(0.5f, -0.5f,  0.5f), float3(1.0f, 0.0f, 1.0f) },
-		{ float3(0.5f,  0.5f, -0.5f), float3(1.0f, 1.0f, 0.0f) },
-		{ float3(0.5f,  0.5f,  0.5f), float3(1.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 0.0f, 0.0f) },
+		{ XMFLOAT3(-0.5f, -0.5f,  0.5f), XMFLOAT3(0.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(-0.5f,  0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 0.0f) },
+		{ XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f) },
+		{ XMFLOAT3(0.5f, -0.5f, -0.5f), XMFLOAT3(1.0f, 0.0f, 0.0f) },
+		{ XMFLOAT3(0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f) },
+		{ XMFLOAT3(0.5f,  0.5f, -0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f) },
+		{ XMFLOAT3(0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 1.0f) },
 	} };
 
 	D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };

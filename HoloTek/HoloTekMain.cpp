@@ -11,20 +11,21 @@
 
 #include "pch.h"
 #include "HoloTekMain.h"
-#include "Common\DirectXHelper.h"
+#include "3D/Utility/DirectXHelper.h"
 
 #include "Content\VideoFrameProcessor.h"
 #include "Content\FaceTrackerProcessor.h"
 
 #include "Content\SpinningCubeRenderer.h"
 #include "Content\QuadRenderer.h"
-#include "Content\TextRenderer.h"
 #include "Content\NV12VideoTexture.h"
+#include "3D/Objects/GUI/Text/TextRenderer.h"
+
+#include "3D/Scene/HolographicScene.h"
 
 using namespace HoloTek;
 
 using namespace concurrency;
-using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Numerics;
 using namespace winrt::Windows::Graphics::Holographic;
 using namespace winrt::Windows::Graphics::Imaging;
@@ -48,9 +49,21 @@ HoloTekMain::HoloTekMain(std::shared_ptr<DX::DeviceResources> deviceResources) :
 	m_deviceResources->RegisterDeviceNotify(this);
 }
 
-std::future<void> HoloTekMain::SetHolographicSpace(HolographicSpace const &holographicSpace)
+winrt::Windows::Foundation::IAsyncAction HoloTekMain::SetHolographicSpace(HolographicSpace const &holographicSpace)
 {
+	//std::wstring path{ winrt::Windows::ApplicationModel::Package::Current().InstalledLocation().Path() };
+	//auto storage = co_await winrt::Windows::Storage::StorageFolder::GetFolderFromPathAsync(L"ms-appx:///Assets");
+	//auto files = co_await storage.GetFilesAsync();
+
+	//for (auto f : files)
+	//{
+	//	TRACE("Got file " << f.Name().c_str() << std::endl);
+	//}
+
 	UnregisterHolographicEventHandlers();
+
+	m_holoScene = std::make_shared<HolographicScene>(m_deviceResources);
+	co_await m_holoScene->InitializeAsync();
 
 	m_holographicSpace = holographicSpace;
 
@@ -86,34 +99,36 @@ std::future<void> HoloTekMain::SetHolographicSpace(HolographicSpace const &holog
 	// with the origin placed at the device's position as the app is launched.
 	m_referenceFrame = m_locator.CreateAttachedFrameOfReferenceAtCurrentHeading();
 
-	m_videoFrameProcessor = co_await VideoFrameProcessor::CreateAsync();
+	//m_videoFrameProcessor = co_await VideoFrameProcessor::CreateAsync();
 
-	m_faceTrackerProcessor = co_await FaceTrackerProcessor::CreateAsync(m_videoFrameProcessor);
+	//m_faceTrackerProcessor = co_await FaceTrackerProcessor::CreateAsync(m_videoFrameProcessor);
 
-	co_await DX::CreateAndInitializeAsync(m_quadRenderer, m_deviceResources);
-	co_await DX::CreateAndInitializeAsync(m_spinningCubeRenderer, m_deviceResources);
-	co_await DX::CreateAndInitializeAsync(m_textRenderer, m_deviceResources, 512u, 512u);
+	//co_await DX::CreateAndInitializeAsync(m_quadRenderer, m_deviceResources);
+	//co_await DX::CreateAndInitializeAsync(m_spinningCubeRenderer, m_deviceResources);
+	//co_await DX::CreateAndInitializeAsync(m_textRenderer, m_deviceResources, 512.0f , 512.0f);
 
-	if (m_videoFrameProcessor)
-	{
-		VideoMediaFrameFormat videoFormat = m_videoFrameProcessor->GetCurrentFormat();
-		co_await DX::CreateAndInitializeAsync(m_videoTexture, m_deviceResources, videoFormat.Width(), videoFormat.Height());
-	}
+	//if (m_videoFrameProcessor)
+	//{
+	//	VideoMediaFrameFormat videoFormat = m_videoFrameProcessor->GetCurrentFormat();
+	//	co_await DX::CreateAndInitializeAsync(m_videoTexture, m_deviceResources, videoFormat.Width(), videoFormat.Height());
+	//}
 
-	// If we weren't able to create the VideoFrameProcessor, then we don't have any cameras we can use.
-	// Set our status message to inform the user. Typically this should only happen on the emulator.
-	if (m_videoFrameProcessor == nullptr)
-	{
-		m_textRenderer->RenderTextOffscreen(L"No camera available");
-	}
-	// Everything is good to go, so we can set our status message to inform the user when we don't detect
-	// any faces.
-	else
-	{
-		m_textRenderer->RenderTextOffscreen(L"No faces detected");
-	}
+	//// If we weren't able to create the VideoFrameProcessor, then we don't have any cameras we can use.
+	//// Set our status message to inform the user. Typically this should only happen on the emulator.
+	//if (m_videoFrameProcessor == nullptr)
+	//{
+	//	m_textRenderer->RenderTextOffscreen(L"No camera available", 22);
+	//}
+	//// Everything is good to go, so we can set our status message to inform the user when we don't detect
+	//// any faces.
+	//else
+	//{
+	//	m_textRenderer->RenderTextOffscreen(L"No faces detected", 22);
+	//}
 
 	m_isReadyToRender = true;
+	TRACE("Finished setup hologrpahic main" << std::endl);
+	co_return;
 }
 
 void HoloTekMain::UnregisterHolographicEventHandlers()
@@ -182,7 +197,7 @@ void HoloTekMain::ProcessFaces(std::vector<BitmapBounds> const& faces,
 
 	for (BitmapBounds const& faceRect : faces)
 	{
-		Point const faceRectCenterPoint = {
+		winrt::Windows::Foundation::Point const faceRectCenterPoint = {
 			static_cast<float>(faceRect.X + faceRect.Width / 2u),
 			static_cast<float>(faceRect.Y + faceRect.Height / 2u),
 		};
@@ -215,7 +230,7 @@ void HoloTekMain::ProcessFaces(std::vector<BitmapBounds> const& faces,
 	// Transform the cube from Camera space to World space.
 	float3 const bestRectPositionInWorldspace = transform(bestRectPositionInCameraSpace, cameraToWorld.Value());
 
-	m_spinningCubeRenderer->SetTargetPosition(bestRectPositionInWorldspace + cubeOffsetInWorldSpace);
+	//m_spinningCubeRenderer->SetTargetPosition(bestRectPositionInWorldspace + cubeOffsetInWorldSpace);
 
 	// Texture Coordinates are [0,1], but our FaceRect is [0,Width] and [0,Height], so we need to normalize these coordinates
 	// We also add padding for the faceRects to make it more visually appealing.
@@ -224,7 +239,7 @@ void HoloTekMain::ProcessFaces(std::vector<BitmapBounds> const& faces,
 	float const normalizedX = static_cast<float>(bestRect.X - paddingForFaceRect) * textureWidthInv;
 	float const normalizedY = static_cast<float>(bestRect.Y - paddingForFaceRect) * textureHeightInv;
 
-	m_quadRenderer->SetTexCoordScaleAndOffset({ normalizedWidth, normalizedHeight }, { normalizedX, normalizedY });
+	//m_quadRenderer->SetTexCoordScaleAndOffset({ normalizedWidth, normalizedHeight }, { normalizedX, normalizedY });
 }
 
 // Updates the application state once per frame.
@@ -249,45 +264,48 @@ HolographicFrame HoloTekMain::Update()
 	m_deviceResources->EnsureCameraResources(holographicFrame, prediction);
 
 	SpatialCoordinateSystem currentCoordinateSystem = m_referenceFrame.GetStationaryCoordinateSystemAtTimestamp(prediction.Timestamp());
-
-	if (m_videoFrameProcessor && m_faceTrackerProcessor)
-	{
-		m_trackingFaces = m_faceTrackerProcessor->IsTrackingFaces();
-
-		if (m_trackingFaces)
-		{
-			if (MediaFrameReference frame = m_videoFrameProcessor->GetLatestFrame())
-			{
-				ProcessFaces(m_faceTrackerProcessor->GetLatestFaces(), frame, currentCoordinateSystem);
-
-				int64_t const currentTimeStamp = frame.SystemRelativeTime().Value().count();
-
-				// Copy only new frames to our DirectX texture.
-				if (currentTimeStamp > m_previousFrameTimestamp)
-				{
-					m_videoTexture->CopyFromVideoMediaFrame(frame.VideoMediaFrame());
-					m_previousFrameTimestamp = currentTimeStamp;
-				}
-			}
-		}
-	}
-
 	SpatialPointerPose pointerPose = SpatialPointerPose::TryGetAtTimestamp(currentCoordinateSystem, prediction.Timestamp());
 
-	m_timer.Tick([&] {
-		m_spinningCubeRenderer->Update(m_timer);
+	m_holoScene->UpdateCoordinateSystem(currentCoordinateSystem);
+	m_holoScene->UpdatePointerPose(pointerPose);
 
-		// If we're tracking faces, then put the quad to the left side of the viewport, 2 meters out.
-		if (m_trackingFaces)
-		{
-			m_quadRenderer->Update(pointerPose, float3{ -0.45f, 0.0f, -2.0f }, m_timer);
-		}
-		// Otherwise, put the quad centered in the viewport, 2 meters out.
-		else
-		{
-			m_quadRenderer->ResetTexCoordScaleAndOffset();
-			m_quadRenderer->Update(pointerPose, float3{ 0.0f, -0.15f, -2.0f }, m_timer);
-		}
+	//if (m_videoFrameProcessor && m_faceTrackerProcessor)
+	//{
+	//	m_trackingFaces = m_faceTrackerProcessor->IsTrackingFaces();
+
+	//	if (m_trackingFaces)
+	//	{
+	//		if (MediaFrameReference frame = m_videoFrameProcessor->GetLatestFrame())
+	//		{
+	//			ProcessFaces(m_faceTrackerProcessor->GetLatestFaces(), frame, currentCoordinateSystem);
+
+	//			int64_t const currentTimeStamp = frame.SystemRelativeTime().Value().count();
+
+	//			// Copy only new frames to our DirectX texture.
+	//			if (currentTimeStamp > m_previousFrameTimestamp)
+	//			{
+	//				m_videoTexture->CopyFromVideoMediaFrame(frame.VideoMediaFrame());
+	//				m_previousFrameTimestamp = currentTimeStamp;
+	//			}
+	//		}
+	//	}
+	//}
+
+	m_timer.Tick([&] {
+		m_holoScene->Update(m_timer);
+		//m_spinningCubeRenderer->Update(m_timer);
+
+		//// If we're tracking faces, then put the quad to the left side of the viewport, 2 meters out.
+		//if (m_trackingFaces)
+		//{
+		//	m_quadRenderer->Update(pointerPose, float3{ -0.45f, 0.0f, -2.0f }, m_timer);
+		//}
+		//// Otherwise, put the quad centered in the viewport, 2 meters out.
+		//else
+		//{
+		//	m_quadRenderer->ResetTexCoordScaleAndOffset();
+		//	m_quadRenderer->Update(pointerPose, float3{ 0.0f, -0.15f, -2.0f }, m_timer);
+		//}
 	});
 
 	// We complete the frame update by using information about our content positioning
@@ -302,24 +320,24 @@ HolographicFrame HoloTekMain::Update()
 		// the image stabilization parameters.
 		HolographicCameraRenderingParameters renderingParameters = holographicFrame.GetRenderingParameters(cameraPose);
 
-		// If we're tracking faces, then put the focus point on the cube
-		if (m_trackingFaces)
-		{
-			renderingParameters.SetFocusPoint(
-				currentCoordinateSystem,
-				m_spinningCubeRenderer->GetPosition()
-			);
-		}
-		// Otherwise put the focus point on status message quad.
-		else
-		{
-			renderingParameters.SetFocusPoint(
-				currentCoordinateSystem,
-				m_quadRenderer->GetPosition(),
-				m_quadRenderer->GetNormal(),
-				m_quadRenderer->GetVelocity()
-			);
-		}
+		//// If we're tracking faces, then put the focus point on the cube
+		//if (m_trackingFaces)
+		//{
+		//	renderingParameters.SetFocusPoint(
+		//		currentCoordinateSystem,
+		//		m_spinningCubeRenderer->GetPosition()
+		//	);
+		//}
+		//// Otherwise put the focus point on status message quad.
+		//else
+		//{
+		//	renderingParameters.SetFocusPoint(
+		//		currentCoordinateSystem,
+		//		m_quadRenderer->GetPosition(),
+		//		m_quadRenderer->GetNormal(),
+		//		m_quadRenderer->GetVelocity()
+		//	);
+		//}
 	}
 
 	// The holographic frame will be used to get up-to-date view and projection matrices and
@@ -378,17 +396,19 @@ bool HoloTekMain::Render(winrt::Windows::Graphics::Holographic::HolographicFrame
 			// Render world-locked content only when positional tracking is active.
 			if (cameraActive)
 			{
-				// If we are tracking any faces, then we render the cube over their head, and the video image on the quad.
-				if (m_trackingFaces)
-				{
-					m_spinningCubeRenderer->Render();
-					m_quadRenderer->RenderNV12(m_videoTexture->GetLuminanceTexture(), m_videoTexture->GetChrominanceTexture());
-				}
-				// Otherwise we render the status message on the quad.
-				else
-				{
-					m_quadRenderer->RenderRGB(m_textRenderer->GetTexture());
-				}
+				TRACE("Rendering in main" << std::endl)
+				m_holoScene->Render();
+				//// If we are tracking any faces, then we render the cube over their head, and the video image on the quad.
+				//if (m_trackingFaces)
+				//{
+				//	m_spinningCubeRenderer->Render();
+				//	m_quadRenderer->RenderNV12(m_videoTexture->GetLuminanceTexture(), m_videoTexture->GetChrominanceTexture());
+				//}
+				//// Otherwise we render the status message on the quad.
+				//else
+				//{
+				//	m_quadRenderer->RenderRGB(m_textRenderer->GetTexture());
+				//}
 			}
 
 			atLeastOneCameraRendered = true;
@@ -413,22 +433,22 @@ void HoloTekMain::LoadAppState()
 void HoloTekMain::OnDeviceLost()
 {
 	m_isReadyToRender = false;
-
-	m_quadRenderer->ReleaseDeviceDependentResources();
+	m_holoScene->OnDeviceLost();
+	/*m_quadRenderer->ReleaseDeviceDependentResources();
 	m_spinningCubeRenderer->ReleaseDeviceDependentResources();
 	m_textRenderer->ReleaseDeviceDependentResources();
-	m_videoTexture->ReleaseDeviceDependentResources();
+	m_videoTexture->ReleaseDeviceDependentResources();*/
 }
 
 // Notifies classes that use Direct3D device resources that the device resources
 // may now be recreated.
 void HoloTekMain::OnDeviceRestored()
 {
-
-	m_quadRenderer->CreateDeviceDependentResourcesAsync().get();
-	m_spinningCubeRenderer->CreateDeviceDependentResourcesAsync().get();
-	m_textRenderer->CreateDeviceDependentResourcesAsync().get();
-	m_videoTexture->CreateDeviceDependentResourcesAsync().get();
+	m_holoScene->OnDeviceRestored();
+	//m_quadRenderer->CreateDeviceDependentResourcesAsync().get();
+	//m_spinningCubeRenderer->CreateDeviceDependentResourcesAsync().get();
+	//m_textRenderer->CreateDeviceDependentResourcesAsync().get();
+	//m_videoTexture->CreateDeviceDependentResourcesAsync().get();
 	m_isReadyToRender = true;
 }
 

@@ -9,8 +9,8 @@
 //
 //*********************************************************
 #include "pch.h"
-#include "NV12VideoTexture.h"
-#include "Common\DirectXHelper.h"
+#include "Content/NV12VideoTexture.h"
+#include "3D/Utility/DirectXHelper.h"
 
 struct __declspec(uuid("5b0d3235-4dba-4d44-865e-8f1d0e4fd04d")) __declspec(novtable) IMemoryBufferByteAccess : ::IUnknown
 {
@@ -18,7 +18,6 @@ struct __declspec(uuid("5b0d3235-4dba-4d44-865e-8f1d0e4fd04d")) __declspec(novta
 };
 
 using namespace winrt;
-using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Graphics::Imaging;
 
 HoloTek::NV12VideoTexture::NV12VideoTexture(std::shared_ptr<DX::DeviceResources> deviceResources, uint32_t width, uint32_t height)
@@ -46,7 +45,7 @@ void HoloTek::NV12VideoTexture::CopyFromVideoMediaFrame(winrt::Windows::Media::C
 	}
 
 	BitmapBuffer bitmapBuffer = softwareBitmap.LockBuffer(BitmapBufferAccessMode::Read);
-	IMemoryBufferReference bufferRef = bitmapBuffer.CreateReference();
+	winrt::Windows::Foundation::IMemoryBufferReference bufferRef = bitmapBuffer.CreateReference();
 
 	auto buffer = bufferRef.as<IMemoryBufferByteAccess>();
 

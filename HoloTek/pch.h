@@ -1,13 +1,27 @@
 #pragma once
 
+#define TRACE( s )            \
+{                             \
+   std::wstringstream os_;    \
+   os_ << s;                   \
+   OutputDebugString( os_.str().c_str() );  \
+}
+
 #include <array>
 #include <future>
+#include <functional>
 #include <map>
 #include <mutex>
 #include <vector>
 #include <memory>
+#include <sstream>
+#include <experimental/resumable>
+
 #include <wincodec.h>
 #include <WindowsNumerics.h>
+
+#include <DirectXMath.h>
+#include <DirectXCollision.h>
 
 #include <d2d1_2.h>
 #include <d2d1effects_1.h>
@@ -18,7 +32,6 @@
 #include <dxgi1_5.h>
 
 #include <Windows.Graphics.Directx.Direct3D11.Interop.h>
-
 #include <wrl/client.h>
 #include <winrt\base.h>
 #include <winrt\Windows.ApplicationModel.Activation.h>

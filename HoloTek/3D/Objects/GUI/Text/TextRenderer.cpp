@@ -11,22 +11,37 @@
 
 #include "pch.h"
 
-#include "Common\DirectXHelper.h"
-#include "TextRenderer.h"
+#include <3D\Utility\DirectXHelper.h>
+#include <3D\Objects\GUI\Text\TextRenderer.h>
 
 using namespace HoloTek;
 
-TextRenderer::TextRenderer(std::shared_ptr<DX::DeviceResources> deviceResources, uint32_t textureWidth, uint32_t textureHeight)
-	: DX::Resource(std::move(deviceResources)),
-	m_textureWidth(textureWidth),
-	m_textureHeight(textureHeight)
+TextRenderer::TextRenderer(const std::shared_ptr<DX::DeviceResources> deviceResources, float x, float y)
+	: DX::Resource(deviceResources), m_x(x), m_y(y)
 {
 }
 
-void TextRenderer::RenderTextOffscreen(const std::wstring& str)
+void TextRenderer::RenderTextOffscreen(const std::wstring& str, float fontSize)
 {
+	// This is where we format the text that will be written on the render target.
+	winrt::check_hresult(
+		m_deviceResources->GetDWriteFactory()->CreateTextFormat(
+			L"Consolas",
+			NULL,
+			DWRITE_FONT_WEIGHT_NORMAL,
+			DWRITE_FONT_STYLE_NORMAL,
+			DWRITE_FONT_STRETCH_NORMAL,
+			fontSize,
+			L"",
+			&m_textFormat
+		)
+	);
+	winrt::check_hresult(m_textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
+	winrt::check_hresult(m_textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
+
 	// Clear the off-screen render target.
 	m_deviceResources->GetD3DDeviceContext()->ClearRenderTargetView(m_renderTargetView.Get(), DirectX::Colors::Transparent);
+
 
 	// Begin drawing with D2D.
 	m_d2dRenderTarget->BeginDraw();
@@ -37,8 +52,8 @@ void TextRenderer::RenderTextOffscreen(const std::wstring& str)
 		str.c_str(),
 		static_cast<UINT32>(str.length()),
 		m_textFormat.Get(),
-		static_cast<float>(m_textureWidth),
-		static_cast<float>(m_textureHeight),
+		TEXT_HD_SIZE * m_x,
+		TEXT_HD_SIZE * m_y,
 		&textLayout
 	);
 
@@ -48,8 +63,8 @@ void TextRenderer::RenderTextOffscreen(const std::wstring& str)
 
 	// In this example, we position the text in the center of the off-screen render target.
 	D2D1::Matrix3x2F screenTranslation = D2D1::Matrix3x2F::Translation(
-		m_textureWidth * 0.5f,
-		m_textureHeight * 0.5f + metrics.height * 0.5f
+		TEXT_HD_SIZE * m_x * 0.5f,
+		TEXT_HD_SIZE * m_y * 0.5f + metrics.height * 0.5f
 	);
 	m_whiteBrush->SetTransform(screenTranslation);
 
@@ -84,22 +99,23 @@ std::future<void> TextRenderer::CreateDeviceDependentResourcesAsync()
 {
 	// Create a default sampler state, which will use point sampling.
 	CD3D11_SAMPLER_DESC desc(D3D11_DEFAULT);
-	m_deviceResources->GetD3DDevice()->CreateSamplerState(&desc, &m_pointSampler);
+	auto device = m_deviceResources->GetD3DDevice();
+	device->CreateSamplerState(&desc, &m_pointSampler);
 
 	// Create the texture that will be used as the offscreen render target.
 	CD3D11_TEXTURE2D_DESC textureDesc(
 		DXGI_FORMAT_B8G8R8A8_UNORM,
-		m_textureWidth,
-		m_textureHeight,
+		(UINT)TEXT_HD_SIZE * m_x,
+		(UINT)TEXT_HD_SIZE * m_y,
 		1,
 		1,
 		D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET
 	);
-	m_deviceResources->GetD3DDevice()->CreateTexture2D(&textureDesc, nullptr, &m_texture);
+	device->CreateTexture2D(&textureDesc, nullptr, &m_texture);
 
 	// Create read and write views for the offscreen render target.
-	m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_texture.Get(), nullptr, &m_shaderResourceView);
-	m_deviceResources->GetD3DDevice()->CreateRenderTargetView(m_texture.Get(), nullptr, &m_renderTargetView);
+	device->CreateShaderResourceView(m_texture.Get(), nullptr, &m_shaderResourceView);
+	device->CreateRenderTargetView(m_texture.Get(), nullptr, &m_renderTargetView);
 
 	// In this example, we are using D2D and DirectWrite; so, we need to create a D2D render target as well.
 	D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
@@ -116,22 +132,5 @@ std::future<void> TextRenderer::CreateDeviceDependentResourcesAsync()
 
 	// Create a solid color brush that will be used to render the text.
 	winrt::check_hresult(m_d2dRenderTarget->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::Cornsilk), &m_whiteBrush));
-
-	// This is where we format the text that will be written on the render target.
-	winrt::check_hresult(
-		m_deviceResources->GetDWriteFactory()->CreateTextFormat(
-			L"Consolas",
-			NULL,
-			DWRITE_FONT_WEIGHT_NORMAL,
-			DWRITE_FONT_STYLE_NORMAL,
-			DWRITE_FONT_STRETCH_NORMAL,
-			64.0f,
-			L"",
-			&m_textFormat
-		)
-	);
-	winrt::check_hresult(m_textFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER));
-	winrt::check_hresult(m_textFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER));
 	co_return;
 }
-

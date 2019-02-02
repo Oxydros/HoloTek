@@ -14,7 +14,6 @@
 
 using namespace HoloTek;
 
-using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Foundation::Numerics;
 

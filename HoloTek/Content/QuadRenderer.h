@@ -11,9 +11,9 @@
 
 #pragma once
 
-#include "Common\DeviceResources.h"
-#include "Common\StepTimer.h"
-#include "ShaderStructures.h"
+#include "3D/Resources/DeviceResources.h"
+#include "3D/Utility/StepTimer.h"
+#include "3D/Shaders/ShaderStructures.h"
 
 namespace HoloTek
 {

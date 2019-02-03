@@ -95,6 +95,7 @@ namespace winrt::DesktopIntra::implementation
 
 			auto content = response.Content().ReadAsStringAsync().get();
 
+			TRACE("GOT " << content.c_str() << std::endl);
 			auto root = Windows::Data::Json::JsonValue::Parse(content);
 
 			for (auto item : root.GetArray())
@@ -112,6 +113,60 @@ namespace winrt::DesktopIntra::implementation
 			}
 			return students;
 		});
+	}
+
+	//https://intra.epitech.eu/module/2018/B-INN-000/TLS-0-1/acti-331246/event-329201/updateregistered?format=json
+	IAsyncAction IntraAPI::MarkRegisteredStudentsAsync(Activity activity, std::vector<std::string> logins)
+	{
+		std::stringstream uriStream;
+
+		uriStream << "https://intra.epitech.eu/module/"
+			<< activity.scholarYear << "/"
+			<< activity.codeModule.c_str() << "/"
+			<< activity.codeInstance.c_str() << "/"
+			<< activity.codeActi.c_str() << "/"
+			<< activity.codeEvent.c_str() << "/updateregistered?format=json";
+
+		TRACE("URL is " << uriStream.str().c_str() << std::endl);
+
+		auto uriString = uriStream.str();
+		auto registeredURI = Uri(winrt::to_hstring(uriString));
+
+		std::map<winrt::hstring, winrt::hstring> contentMap{};
+
+		for (size_t i = 0; i < logins.size(); i++) {
+			auto &student = logins[i];
+			//{ L"items[0][present]", L"present" }
+			std::wstringstream itemStream;
+			itemStream << "items[" << i << "]";
+
+			auto loginKey = itemStream.str() + L"[login]";
+			auto presenceKey = itemStream.str() + L"[present]";
+
+			contentMap[loginKey.c_str()] = winrt::to_hstring(student);
+			contentMap[presenceKey.c_str()] = L"present";
+			TRACE("Size " << contentMap.size() << std::endl);
+		}
+
+		TRACE("Size " << contentMap.size() << std::endl);
+
+		auto requestContent = winrt::single_threaded_map<winrt::hstring, winrt::hstring>(std::move(contentMap));
+		winrt::Windows::Web::Http::HttpFormUrlEncodedContent contents(requestContent);
+
+		auto c = co_await contents.ReadAsStringAsync();
+		TRACE("Got " << c.c_str() << std::endl);
+
+		try
+		{
+			auto response = co_await m_client.PostAsync(registeredURI, contents);
+			response.EnsureSuccessStatusCode();
+			auto content = co_await response.Content().ReadAsStringAsync();
+			TRACE("Got response content " << content.c_str() << std::endl);
+		}
+		catch (winrt::hresult_error const &ex) {
+			TRACE("Error " << ex.message().c_str() << std::endl);
+		}
+		co_return;
 	}
 
 

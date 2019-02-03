@@ -16,11 +16,13 @@ namespace winrt::DesktopIntra::implementation
 		IAsyncAction LoginHandler(Windows::Foundation::IInspectable const& sender, Windows::UI::Xaml::RoutedEventArgs const& args);
 		IAsyncAction PlanningHandler(Windows::Foundation::IInspectable const& sender, Windows::UI::Xaml::RoutedEventArgs const& args);
 		IAsyncAction ActivityHandler(Windows::Foundation::IInspectable const& sender, Windows::UI::Xaml::RoutedEventArgs const& args);
+		IAsyncAction StudentHandler(Windows::Foundation::IInspectable const& sender, Windows::UI::Xaml::RoutedEventArgs const& args);
 
 	private:
 		IAsyncAction ProcessActivitiesAsync();
 
 		IntraAPI						m_api;
+		IntraAPI::Activity				m_currentActivity;
 		std::vector<IntraAPI::Activity>	m_activities;
 		std::mutex						m_propertiesLock;
     };

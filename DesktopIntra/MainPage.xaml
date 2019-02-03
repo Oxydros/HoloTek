@@ -8,8 +8,16 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     mc:Ignorable="d">
 
-    <StackPanel x:Name="Panel"  Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Button x:Name="LoginButton" Click="LoginHandler" Content="Login" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <Button x:Name="PlanningButton" Click="PlanningHandler" Content="Planning" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-    </StackPanel>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Background="#2f5cb6" Grid.Column ="0" x:Name="ActivityPanel">
+            <Button x:Name="LoginButton" Click="LoginHandler" Content="Login" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Button x:Name="PlanningButton" Click="PlanningHandler" Content="Planning" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Background="#1f3d7a" Grid.Column ="1" x:Name="StudentPanel">
+        </StackPanel>
+    </Grid>
 </Page>

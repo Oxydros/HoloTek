@@ -5,7 +5,7 @@
 
 #pragma once
 
-#define DBOUT( s )            \
+#define TRACE( s )            \
 {                             \
    std::wstringstream os_;    \
    os_ << s;                   \
@@ -17,6 +17,7 @@
 #include <ctime>
 #include <sstream>
 #include <algorithm>
+#include <map>
 
 #include <pplawait.h>
 #include <windows.h>
@@ -35,4 +36,6 @@
 #include <winrt\Windows.UI.Xaml.Navigation.h>
 #include <winrt\Windows.Web.h>
 #include <winrt\Windows.Web.Http.h>
+#include <winrt\Windows.Web.Http.Headers.h>
 #include <winrt\Windows.Data.Json.h>
+#include <winrt\Windows.Security.Cryptography.h>

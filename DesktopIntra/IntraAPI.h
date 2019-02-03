@@ -35,6 +35,7 @@ namespace winrt::DesktopIntra::implementation
 		IAsyncOperation<HttpStatusCode> LoginAsync();
 		concurrency::task<std::vector<Activity>> GetActivitiesAsync();
 		concurrency::task<std::vector<Student>> GetRegisteredStudentsAsync(Activity const &activity);
+		IAsyncAction MarkRegisteredStudentsAsync(Activity activity, std::vector<std::string> logins);
 	private:
 		std::string								m_autoLogin;
 		winrt::Windows::Web::Http::HttpClient	m_client;

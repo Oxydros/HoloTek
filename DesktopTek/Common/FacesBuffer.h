@@ -45,7 +45,8 @@ namespace winrt::DesktopTek::implementation {
 
 		concurrency::task<void> InitializeAsync();
 
-		IAsyncOperation<IVector<winrt::hstring>> GetMatchingImagesAsync(SoftwareBitmap facesToFind);
+		IAsyncOperation<IVector<winrt::hstring>> GetMatchingImagesAsync(SoftwareBitmap facesToFind,
+			std::vector<std::string> const &studentsToCheck);
 
 		bool isInitialized() {
 			std::lock_guard<std::shared_mutex> lock(m_propertiesLock);
@@ -81,7 +82,7 @@ namespace winrt::DesktopTek::implementation {
 		anet_type									m_net;
 		frontal_face_detector						m_detector;
 		std::vector<matrix<rgb_pixel>>				m_faces;
-		std::vector<std::wstring>					m_imagesNames;
+		std::vector<std::string>					m_imagesNames;
 		std::shared_mutex							m_propertiesLock;
 	};
 }

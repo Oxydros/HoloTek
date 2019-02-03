@@ -100,6 +100,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Common\FacesBuffer.h" />
+    <ClInclude Include="Common\IntraAPI.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.h">
       <DependentUpon>App.xaml</DependentUpon>
@@ -132,9 +133,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\Images\fabien.viollet%40epitech.eu.JPG" />
-    <Image Include="Assets\Images\louis.ventre%40epitech.eu.jpg" />
-    <Image Include="Assets\Images\papa.jpg" />
     <Image Include="Assets\LockScreenLogo.scale-200.png" />
     <Image Include="Assets\SplashScreen.scale-200.png" />
     <Image Include="Assets\Square150x150Logo.scale-200.png" />
@@ -145,6 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common\FacesBuffer.cpp" />
+    <ClCompile Include="Common\IntraAPI.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

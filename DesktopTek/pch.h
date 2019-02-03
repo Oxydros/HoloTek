@@ -5,15 +5,27 @@
 
 #pragma once
 
+#define TRACE( s )            \
+{                             \
+   std::wstringstream os_;    \
+   os_ << s;                   \
+   OutputDebugString( os_.str().c_str() );  \
+}
+
 #include <array>
+#include <regex>
 #include <future>
 #include <map>
 #include <mutex>
 #include <vector>
 #include <memory>
 #include <sstream>
-#include <pplawait.h>
+#include <iomanip>
+#include <ctime>
+#include <algorithm>
+#include <map>
 
+#include <pplawait.h>
 #include <windows.h>
 #include <unknwn.h>
 #include <restrictederrorinfo.h>
@@ -52,8 +64,15 @@
 #include <winrt\Windows.Storage.h>
 #include <winrt\Windows.Storage.Streams.h>
 
+#include <winrt\Windows.Web.h>
+#include <winrt\Windows.Web.Http.h>
+#include <winrt\Windows.Web.Http.Headers.h>
+
+#include <winrt\Windows.Data.Json.h>
+
 #include <dlib\dnn.h>
 #include <dlib\clustering.h>
 #include <dlib\string.h>
 #include <dlib\image_io.h>
 #include <dlib\image_processing\frontal_face_detector.h>
+#include <dlib/gui_widgets.h>

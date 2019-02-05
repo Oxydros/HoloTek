@@ -10,8 +10,6 @@ using namespace Windows::Foundation::Collections;
 using namespace Windows::Media;
 using namespace Windows::Graphics::Imaging;
 using namespace Windows::Storage::Streams;
-using namespace std;
-using namespace dlib;
 
 //Heavely based on http://dlib.net/dnn_face_recognition_ex.cpp.html
 namespace winrt::DesktopTek::implementation
@@ -31,68 +29,24 @@ namespace winrt::DesktopTek::implementation
 	//http://dlib.net/files/dlib_face_recognition_resnet_model_v1.dat.bz2
 	void FacesBuffer::InitializeDLib()
 	{
-		deserialize("./Assets/shape_predictor_5_face_landmarks.dat") >> m_sp;
-		deserialize("./Assets/dlib_face_recognition_resnet_model_v1.dat") >> m_net;
+		TRACE("Init dlib" << std::endl);
+		dlib::deserialize("./Assets/shape_predictor_5_face_landmarks.dat") >> m_sp;
+		dlib::deserialize("./Assets/dlib_face_recognition_resnet_model_v1.dat") >> m_net;
 
-		m_detector = get_frontal_face_detector();
-	}
+		m_detector = dlib::get_frontal_face_detector();
 
-	void findAndReplaceAll(std::string & data, std::string toSearch, std::string replaceStr)
-	{
-		// Get the first occurrence
-		size_t pos = data.find(toSearch);
+		dlib::deserialize("./Assets/refFaces_labels.dat") >> m_refImagesNames;
 
-		// Repeat till end is reached
-		while (pos != std::string::npos)
-		{
-			// Replace this occurrence of Sub String
-			data.replace(pos, toSearch.size(), replaceStr);
-			// Get the next occurrence from the current position
-			pos = data.find(toSearch, pos + replaceStr.size());
-		}
-	}
+		TRACE("Got " << m_refImagesNames.size() << " images names" << std::endl);
 
-	IAsyncAction FacesBuffer::InitializeFaces()
-	{
-		std::wstring path{ Windows::ApplicationModel::Package::Current().InstalledLocation().Path() + m_folder };
-		auto storage = co_await Windows::Storage::StorageFolder::GetFolderFromPathAsync(path);
-		auto files = co_await storage.GetFilesAsync();
+		dlib::deserialize("./Assets/refFaces_data.dat") >> m_refFacesDescriptors;
 
-		for (auto f : files)
-		{
-			std::wstring imagePath{ path + L"\\" + f.Name() };
-			std::string imageString(imagePath.begin(), imagePath.end());
-
-			matrix<rgb_pixel> img;
-			TRACE("Loading " << imageString.c_str() << std::endl);
-			load_image(img, imageString);
-
-			auto faces = m_detector(img);
-
-			TRACE("Found " << faces.size() << " in " << imageString.c_str() << std::endl);
-
-			for (auto face : faces)
-			{
-				auto shape = m_sp(img, face);
-				auto hName = f.Name();
-				string imageName = std::string(hName.begin(), hName.end());
-				findAndReplaceAll(imageName, "_", "-");
-				findAndReplaceAll(imageName, ".jpg", "@epitech.eu");
-				TRACE("New name went from " << hName.c_str() << " to " << imageName.c_str() << std::endl);
-
-				matrix<rgb_pixel> face_chip;
-				extract_image_chip(img, get_face_chip_details(shape, 150, 0.25), face_chip);
-				m_faces.push_back(move(face_chip));
-				m_imagesNames.push_back(imageName);
-			}
-		}
-		TRACE("Loaded " << m_faces.size() << " face(s) from " << m_imagesNames.size() << " file(s)" << std::endl);
+		TRACE("Got " << m_refFacesDescriptors.size() << " descriptors" << std::endl);
 	}
 
 	concurrency::task<void> FacesBuffer::InitializeAsync()
 	{
 		InitializeDLib();
-		co_await InitializeFaces();
 		setInitialized();
 		co_return;
 	}
@@ -117,13 +71,13 @@ namespace winrt::DesktopTek::implementation
 			auto img = co_await getPixelMatrixAsync(std::move(facesToFind));
 
 			//Extract faces from the video frame
-			std::vector<matrix<rgb_pixel>> toFindFaces;
+			std::vector<dlib::matrix<dlib::rgb_pixel>> toFindFaces;
 			for (auto face : m_detector(img))
 			{
 				auto shape = m_sp(img, face);
-				matrix<rgb_pixel> face_chip;
+				dlib::matrix<dlib::rgb_pixel> face_chip;
 				extract_image_chip(img, get_face_chip_details(shape, 150, 0.25), face_chip);
-				toFindFaces.push_back(move(face_chip));
+				toFindFaces.push_back(std::move(face_chip));
 			}
 
 			if (toFindFaces.size() == 0) {
@@ -134,89 +88,114 @@ namespace winrt::DesktopTek::implementation
 
 			TRACE("Got " << std::to_wstring(toFindFaces.size()) << " faces to compare with ref" << std::endl);
 
+			std::vector<dlib::matrix<float, 0, 1>> toFindFacesDescriptors = m_net(toFindFaces);
+
 			//Only checking against ref that needs to be
-			std::vector<matrix<rgb_pixel>> refFaces;
-			std::vector<std::string> refFacesName;
+			std::vector<dlib::matrix<float, 0, 1>> refFacesDescriptors = m_refFacesDescriptors;
+			std::vector<std::string> refFacesName = m_refImagesNames;
 
-			for (auto studentToFind : studentsToCheck) {
-				auto foundRef = std::find_if(m_imagesNames.begin(), m_imagesNames.end(), [&studentToFind](std::string const &imageName) {
-					return studentToFind == imageName;
-				});
+			//for (auto studentToFind : studentsToCheck) {
+			//	auto foundRef = std::find_if(m_refImagesNames.begin(), m_refImagesNames.end(), [&studentToFind](std::string const &imageName) {
+			//		return studentToFind == imageName;
+			//	});
 
-				if (foundRef != m_imagesNames.end()) {
-					auto idx = std::distance(m_imagesNames.begin(), foundRef);
-					refFaces.push_back(m_faces[idx]);
-					refFacesName.push_back(studentToFind);
-				}
-			}
+			//	if (foundRef != m_refImagesNames.end()) {
+			//		auto idx = std::distance(m_refImagesNames.begin(), foundRef);
+			//		refFacesDescriptors.push_back(m_refFacesDescriptors[idx]);
+			//		refFacesName.push_back(studentToFind);
+			//	}
+			//}
 
 			for (auto ref : refFacesName) {
 				TRACE("Will check against ref " << ref.c_str() << std::endl);
 			}
-			TRACE("Size of ref to check is " << refFaces.size() << std::endl);
 
-			//Compare all the faces to each references
-			for (size_t i = 0; i < refFaces.size(); i++) {
-				std::vector<matrix<rgb_pixel>> facesToProcess;
-				facesToProcess.reserve(toFindFaces.size() + 1);
+			TRACE("Size of ref to check is " << refFacesDescriptors.size() << std::endl);
 
-				auto toProcess = refFaces[i];
-				auto toProcessName = refFacesName[i];
+			for (size_t target = 0; target < toFindFacesDescriptors.size(); target++) {
 
-				TRACE("Processing with image " << toProcessName.c_str() << std::endl);
+				float smallestLength = 1.0f;
+				int finalRef = -1;
+				auto targetDesc = toFindFacesDescriptors[target];
 
-				facesToProcess.push_back(toProcess);
-				facesToProcess.insert(facesToProcess.end(), toFindFaces.begin(), toFindFaces.end());
-
-				TRACE(std::to_wstring(facesToProcess.size()) << " faces to process" << std::endl);
-
-				//http://dlib.net/dnn_face_recognition_ex.cpp.html
-				std::vector<matrix<float, 0, 1>> face_descriptors = m_net(facesToProcess);
-				std::vector<sample_pair> edges;
-				for (size_t i = 0; i < face_descriptors.size(); ++i)
-				{
-					for (size_t j = i; j < face_descriptors.size(); ++j)
-					{
-						if (length(face_descriptors[i] - face_descriptors[j]) < 0.6)
-							edges.push_back(sample_pair(i, j));
+				for (int ref = 0; ref < refFacesDescriptors.size(); ref++) {
+					auto length = dlib::length(refFacesDescriptors[ref] - targetDesc);
+					if (length < 0.6 && length < smallestLength) {
+						smallestLength = length;
+						finalRef = ref;
 					}
 				}
-				if (edges.size() < 2)
-					continue;
-
-				std::vector<unsigned long> labels;
-				chinese_whispers(edges, labels, 50);
-
-				//Only take labels found > 1 as there is at least 1 for the reference, and 1 for the current
-				//face on stream
-				std::vector<unsigned int> finalLabels;
-				finalLabels.resize(refFaces.size());
-
-				//Aggregate all labels found on the reference
-				for (unsigned int i = 0; i < labels.size(); i++) {
-					auto label = labels[i];
-
-					if (label < finalLabels.size())
-						finalLabels[label] += 1;
+				if (finalRef >= 0) {
+					TRACE("Name of ref found for target " << target << " is " << refFacesName[finalRef].c_str()
+						<< " with confidence of " << smallestLength << std::endl);
+					foundImages.push_back(winrt::to_hstring(refFacesName[finalRef]));
 				}
-
-				for (unsigned int idx = 0; idx < finalLabels.size(); idx++)
-				{
-					auto numOfLabel = finalLabels[idx];
-
-					//If we found more than one time the same image, it means that an image on the stream
-					//is keep as reference, or that there is two times the same face on stream
-					if (numOfLabel > 1) {
-
-						//Only process if it's in the reference images
-						//If we have siblings on stream and not in reference, this condition will not hold
-						if (idx < 1) {
-							foundImages.push_back(winrt::to_hstring(refFacesName[i].c_str()));
-						}
-					}
+				else {
+					TRACE("No face found for target " << target << std::endl);
 				}
 			}
-			TRACE("number of people found in the image: " << foundImages.size() << endl);
+
+			//Compare all the faces to each references
+			//for (size_t i = 0; i < toFindFacesDescriptors.size(); i++) {
+			//	auto toProcessDescriptor = toFindFacesDescriptors[i];
+			//	/*auto toProcessName = refFacesName[i];*/
+
+			//	/*TRACE("Processing with image " << toProcessName.c_str() << std::endl);*/
+
+			//	//http://dlib.net/dnn_face_recognition_ex.cpp.html
+			//	std::vector<dlib::matrix<float, 0, 1>> face_descriptors;
+			//	face_descriptors.reserve(refFacesDescriptors.size() + 1);
+			//	face_descriptors.push_back(toProcessDescriptor);
+			//	face_descriptors.insert(face_descriptors.end(), refFacesDescriptors.begin(), refFacesDescriptors.end());
+
+			//	std::vector<dlib::sample_pair> edges;
+			//	for (size_t descI = 0; descI < face_descriptors.size(); ++descI)
+			//	{
+			//		for (size_t descJ = descI; descJ < face_descriptors.size(); ++descJ)
+			//		{
+			//			auto length = dlib::length(face_descriptors[descI] - face_descriptors[descJ]);
+			//			if (length < 0.6) {
+			//				edges.push_back(dlib::sample_pair(descI, descJ));
+			//			}							
+			//		}
+			//	}
+
+			//	if (edges.size() < 2)
+			//		continue;
+
+			//	std::vector<unsigned long> labels;
+			//	dlib::chinese_whispers(edges, labels);
+
+			//	unsigned long targetLabel = labels[0];
+
+			//	//Only take labels found > 1 as there is at least 1 for the reference, and 1 for the current
+			//	//face on stream
+			//	std::vector<unsigned long> finalLabels;
+			//	finalLabels.reserve(labels.size());
+
+			//	//Aggregate all labels found on the reference
+			//	for (unsigned int i = 0; i < labels.size(); i++) {
+			//		auto label = labels[i];
+			//		finalLabels[label] += 1;
+			//	}
+
+			//	for (unsigned int idx = 0; idx < finalLabels.size(); idx++)
+			//	{
+			//		auto numOfLabel = finalLabels[idx];
+
+			//		//If we found more than one time the same image, it means that an image on the stream
+			//		//is keep as reference, or that there is two times the same face on stream
+			//		if (numOfLabel > 1) {
+
+			//			//Only process if it's in the reference images
+			//			//If we have siblings on stream and not in reference, this condition will not hold
+			//			if (idx >= 1) {
+			//				foundImages.push_back(winrt::to_hstring(refFacesName[idx - 1].c_str()));
+			//			}
+			//		}
+			//	}
+			//}
+			TRACE("number of people found in the image: " << foundImages.size() << std::endl);
 
 			TRACE("Faces found:" << std::endl);
 			for (auto &image : foundImages)
@@ -229,13 +208,13 @@ namespace winrt::DesktopTek::implementation
 		catch (dlib::fatal_error const &except)
 		{
 			TRACE("Dlib crashed: " << except.info.c_str() << std::endl);
-			throw runtime_error("DLib Crashed !");
+			throw std::runtime_error("DLib Crashed !");
 		}
 	}
 
-	concurrency::task<matrix<rgb_pixel>> FacesBuffer::getPixelMatrixAsync(SoftwareBitmap softwareBitmap)
+	concurrency::task<dlib::matrix<dlib::rgb_pixel>> FacesBuffer::getPixelMatrixAsync(SoftwareBitmap softwareBitmap)
 	{
-		matrix<rgb_pixel> img;
+		dlib::matrix<dlib::rgb_pixel> img;
 		InMemoryRandomAccessStream stream;
 
 		BitmapEncoder encoder = co_await BitmapEncoder::CreateAsync(BitmapEncoder::BmpEncoderId(), stream);

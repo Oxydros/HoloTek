@@ -20,6 +20,7 @@
 #include <vector>
 #include <memory>
 #include <sstream>
+#include <fstream>
 #include <iomanip>
 #include <ctime>
 #include <algorithm>
@@ -75,4 +76,4 @@
 #include <dlib\string.h>
 #include <dlib\image_io.h>
 #include <dlib\image_processing\frontal_face_detector.h>
-#include <dlib/gui_widgets.h>
+#include <dlib\gui_widgets.h>

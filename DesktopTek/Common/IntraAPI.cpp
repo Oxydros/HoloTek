@@ -95,21 +95,28 @@ namespace winrt::DesktopTek::implementation
 
 			auto content = response.Content().ReadAsStringAsync().get();
 
-			TRACE("GOT " << content.c_str() << std::endl);
 			auto root = Windows::Data::Json::JsonValue::Parse(content);
 
-			for (auto item : root.GetArray())
+			try
 			{
-				auto object = item.GetObject();
-				auto login = object.GetNamedString(L"login");
-				auto title = object.GetNamedString(L"title");
-				auto picture = object.GetNamedString(L"picture");
-				auto student = IntraAPI::Student{
-					winrt::to_string(login),
-					winrt::to_string(title),
-					winrt::to_string(picture)
-				};
-				students.push_back(std::move(student));
+				for (auto item : root.GetArray())
+				{
+					auto object = item.GetObject();
+					auto login = object.GetNamedString(L"login");
+					auto title = object.GetNamedString(L"title");
+					auto picture = object.GetNamedString(L"picture");
+					auto student = IntraAPI::Student{
+						winrt::to_string(login),
+						winrt::to_string(title),
+						winrt::to_string(picture)
+					};
+					students.push_back(std::move(student));
+				}
+			}
+			catch (winrt::hresult_illegal_method_call const &e)
+			{
+				TRACE("Error while processing registered students " << e.message().c_str() << std::endl);
+				return students;
 			}
 			return students;
 		});
@@ -146,10 +153,7 @@ namespace winrt::DesktopTek::implementation
 
 			contentMap[loginKey.c_str()] = student;
 			contentMap[presenceKey.c_str()] = L"present";
-			TRACE("Size " << contentMap.size() << std::endl);
 		}
-
-		TRACE("Size " << contentMap.size() << std::endl);
 
 		auto requestContent = winrt::single_threaded_map<winrt::hstring, winrt::hstring>(std::move(contentMap));
 		winrt::Windows::Web::Http::HttpFormUrlEncodedContent contents(requestContent);
@@ -159,10 +163,10 @@ namespace winrt::DesktopTek::implementation
 
 		try
 		{
-			/*auto response = co_await m_client.PostAsync(registeredURI, contents);
+			auto response = co_await m_client.PostAsync(registeredURI, contents);
 			response.EnsureSuccessStatusCode();
 			auto content = co_await response.Content().ReadAsStringAsync();
-			TRACE("Got response content " << content.c_str() << std::endl);*/
+			TRACE("Got response content " << content.c_str() << std::endl);
 		}
 		catch (winrt::hresult_error const &ex) {
 			TRACE("Error " << ex.message().c_str() << std::endl);

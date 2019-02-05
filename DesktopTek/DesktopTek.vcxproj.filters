@@ -56,6 +56,8 @@
     <None Include="packages.config" />
     <None Include="Assets\dlib_face_recognition_resnet_model_v1.dat" />
     <None Include="Assets\shape_predictor_5_face_landmarks.dat" />
+    <None Include="Assets\refFaces_data.dat" />
+    <None Include="Assets\refFaces_labels.dat" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

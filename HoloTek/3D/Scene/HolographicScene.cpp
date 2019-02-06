@@ -4,8 +4,12 @@
 
 #include "API/IntraAPI.h"
 
+using namespace winrt::Windows::Graphics::Imaging;
+using namespace winrt::Windows::Media::Capture;
+using namespace winrt::Windows::Media::Capture::Frames;
+
 HoloTek::HolographicScene::HolographicScene(std::shared_ptr<DX::DeviceResources> deviceResources)
-	: m_deviceResources(deviceResources), m_api("XXXXXXXXXXX")
+	: m_deviceResources(deviceResources), m_api("XXXXXXXXXXXXXXXX")
 {
 }
 
@@ -55,6 +59,11 @@ std::future<void> HoloTek::HolographicScene::InitializeAsync()
 	else {
 		TRACE("Logged in status " << "NICKEL" << std::endl);
 	}
+
+	m_facesBuffer = std::make_shared<FacesBuffer>();
+	co_await m_facesBuffer->InitializeAsync();
+
+	m_videoFrameProcessor = co_await VideoFrameProcessor::CreateAsync();
 	co_return;
 }
 
@@ -83,6 +92,24 @@ void HoloTek::HolographicScene::Update(DX::StepTimer const& timer)
 		//No entity found in gaze, remove focus from actual entity
 		m_focusedEntity->setFocus(false);
 		m_focusedEntity = nullptr;
+	}
+
+	if (m_videoFrameProcessor)
+	{
+		MediaFrameReference frame = m_videoFrameProcessor->GetLatestFrame();
+		if (frame != nullptr)
+		{
+			auto videoFrame = frame.VideoMediaFrame();
+			if (videoFrame != nullptr)
+			{
+				auto bitmap = videoFrame.SoftwareBitmap();
+				if (bitmap != nullptr && m_facesBuffer->isProcessing() == false)
+				{
+					TRACE("Launching match faces" << std::endl);
+					m_facesBuffer->GetMatchingImagesAsync(std::move(bitmap));
+				}
+			}
+		}
 	}
 
 	m_root->Update(timer);

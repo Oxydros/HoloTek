@@ -1,10 +1,9 @@
 #pragma once
 
-using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Graphics::Imaging;
 
-namespace winrt::DesktopTek::implementation {
+namespace HoloTek {
 
 	template <template <int, template<typename>class, int, typename> class block, int N, template<typename>class BN, typename SUBNET>
 	using residual = dlib::add_prev1<block<N, BN, 1, dlib::tag1<SUBNET>>>;
@@ -44,12 +43,12 @@ namespace winrt::DesktopTek::implementation {
 
 		concurrency::task<void> InitializeAsync();
 
-		IAsyncOperation<IVector<winrt::hstring>> GetMatchingImagesAsync(winrt::Windows::Graphics::Imaging::SoftwareBitmap facesToFind);
+		winrt::Windows::Foundation::IAsyncOperation<IVector<winrt::hstring>> GetMatchingImagesAsync(winrt::Windows::Graphics::Imaging::SoftwareBitmap facesToFind);
 
-		IAsyncOperation<IVector<winrt::hstring>> GetMatchingImagesAsync(winrt::Windows::Graphics::Imaging::SoftwareBitmap facesToFind,
+		winrt::Windows::Foundation::IAsyncOperation<IVector<winrt::hstring>> GetMatchingImagesAsync(winrt::Windows::Graphics::Imaging::SoftwareBitmap facesToFind,
 			std::vector<std::string> const &studentsToCheck);
 
-		IAsyncOperation<IVector<winrt::hstring>> GetMatchingImagesAsync(winrt::Windows::Graphics::Imaging::SoftwareBitmap facesToFind,
+		winrt::Windows::Foundation::IAsyncOperation<IVector<winrt::hstring>> GetMatchingImagesAsync(winrt::Windows::Graphics::Imaging::SoftwareBitmap facesToFind,
 			std::vector<dlib::matrix<float, 0, 1>> const &refFacesDescriptors, std::vector<std::string> const &refFacesName);
 
 		bool isInitialized() {

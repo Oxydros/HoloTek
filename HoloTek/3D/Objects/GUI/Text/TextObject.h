@@ -3,7 +3,6 @@
 #include "3D\Shaders\ShaderStructures.h"
 #include "3D\Objects\GUI\Text\ATextObject.h"
 #include "3D\Objects\GUI\Text\TextRenderer.h"
-#include "3D\Resources\Texture2D.h"
 
 using namespace winrt::Windows::Foundation::Numerics;
 

@@ -40,21 +40,6 @@
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="HoloTekMain.cpp" />
     <ClCompile Include="AppView.cpp" />
-    <ClCompile Include="Content\SpinningCubeRenderer.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
-    <ClCompile Include="Content\FaceTrackerProcessor.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
-    <ClCompile Include="Content\NV12VideoTexture.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
-    <ClCompile Include="Content\QuadRenderer.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
-    <ClCompile Include="Content\VideoFrameProcessor.cpp">
-      <Filter>Content</Filter>
-    </ClCompile>
     <ClCompile Include="3D\Objects\GUI\Text\TextObject.cpp" />
     <ClCompile Include="3D\Input\SpatialInputHandler.cpp">
       <Filter>Content</Filter>
@@ -79,26 +64,15 @@
     <ClCompile Include="3D\Objects\Mesh\3DFormes\ColoredCube.cpp" />
     <ClCompile Include="API\IntraAPI.cpp" />
     <ClCompile Include="3D\Entities\GUI\Menus\ActivityMenu.cpp" />
+    <ClCompile Include="Recognition\FacesBuffer.cpp" />
+    <ClCompile Include="Recognition\VideoFrameProcessor.cpp">
+      <Filter>Content</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="HoloTekMain.h" />
     <ClInclude Include="AppView.h" />
-    <ClInclude Include="Content\SpinningCubeRenderer.h">
-      <Filter>Content</Filter>
-    </ClInclude>
-    <ClInclude Include="Content\FaceTrackerProcessor.h">
-      <Filter>Content</Filter>
-    </ClInclude>
-    <ClInclude Include="Content\NV12VideoTexture.h">
-      <Filter>Content</Filter>
-    </ClInclude>
-    <ClInclude Include="Content\QuadRenderer.h">
-      <Filter>Content</Filter>
-    </ClInclude>
-    <ClInclude Include="Content\VideoFrameProcessor.h">
-      <Filter>Content</Filter>
-    </ClInclude>
     <ClInclude Include="3D\Objects\GUI\Text\TextObject.h" />
     <ClInclude Include="3D\Input\SpatialInputHandler.h">
       <Filter>Content</Filter>
@@ -135,9 +109,17 @@
     <ClInclude Include="3D\Objects\Mesh\3DFormes\ColoredCube.h" />
     <ClInclude Include="API\IntraAPI.h" />
     <ClInclude Include="3D\Entities\GUI\Menus\ActivityMenu.h" />
+    <ClInclude Include="Recognition\FacesBuffer.h" />
+    <ClInclude Include="Recognition\VideoFrameProcessor.h">
+      <Filter>Content</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Assets\dlib_face_recognition_resnet_model_v1.dat" />
+    <None Include="Assets\refFaces_data.dat" />
+    <None Include="Assets\refFaces_labels.dat" />
+    <None Include="Assets\shape_predictor_5_face_landmarks.dat" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

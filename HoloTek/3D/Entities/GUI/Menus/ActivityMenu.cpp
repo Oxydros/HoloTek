@@ -75,17 +75,16 @@ std::future<void> HoloTek::ActivityMenu::refreshActivityListAsync()
 
 	for (size_t i = 0; i < 3 && i < activities.size(); i++) {
 		auto &acti = activities[i];
-		auto name = acti.codeActi.c_str();
-		auto wname = winrt::impl::to_hstring(name);
+		auto name = acti.codeActi;
 
 		auto position = float3((sizeX * i) + 0.4, 0, zPos);
 
 		TRACE("Adding activity " << acti.codeActi.c_str() << " to activity menu" << std::endl;);
 		auto buttonSphere = std::make_unique<Button2D>(m_devicesResources, safeScene, float2(sizeX, sizeY));
-		buttonSphere->setLabel(wname.c_str());
+		buttonSphere->setLabel(name.c_str());
 		buttonSphere->SetRelativePosition(position);
 		buttonSphere->SetAirTapCallback([=](Spatial::SpatialGestureRecognizer const &, Spatial::SpatialTappedEventArgs const &) {
-			TRACE("Got interraction on activity " << wname.c_str() << std::endl);
+			TRACE("Got interraction on activity " << name.c_str() << std::endl);
 		});
 
 		activityList->AddChild(std::move(buttonSphere));

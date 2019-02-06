@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /DesktopTek/Assets/Images
 /DesktopTek/Assets/*.dat
+/HoloTek/Assets/*.dat

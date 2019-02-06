@@ -74,11 +74,14 @@ std::future<std::shared_ptr<VideoFrameProcessor>> VideoFrameProcessor::CreateAsy
 	co_await nonagile_media.InitializeAsync(settings);
 
 	MediaFrameSource selectedSource = nonagile_media.FrameSources().Lookup(selectedSourceInfo.Id());
-	MediaFrameReader reader = co_await nonagile_media.CreateFrameReaderAsync(selectedSource);
+	auto sourceType = winrt::Windows::Media::MediaProperties::MediaEncodingSubtypes::Bgra8();
+	MediaFrameReader reader = co_await nonagile_media.CreateFrameReaderAsync(selectedSource,
+		sourceType);
 	MediaFrameReaderStartStatus status = co_await reader.StartAsync();
 	// Only create a VideoFrameProcessor if the reader successfully started
 	if (status == MediaFrameReaderStartStatus::Success)
 	{
+		TRACE("Frame processor created !" << std::endl);
 		co_return std::make_shared<VideoFrameProcessor>(winrt::make_agile(std::move(nonagile_media)), reader, selectedSource);
 	}
 	else

@@ -2,8 +2,6 @@
 
 #include "FacesBuffer.h"
 
-using namespace winrt::Windows::UI::Xaml;
-using namespace winrt::Windows::UI::Xaml::Media;
 using namespace winrt::Windows::Foundation;
 using namespace winrt::Windows::Foundation::Collections;
 using namespace winrt::Windows::Media;
@@ -11,7 +9,7 @@ using namespace winrt::Windows::Graphics::Imaging;
 using namespace winrt::Windows::Storage::Streams;
 
 //Heavely based on http://dlib.net/dnn_face_recognition_ex.cpp.html
-namespace winrt::DesktopTek::implementation
+namespace HoloTek
 {
 	FacesBuffer::FacesBuffer(std::wstring imagesFolder) :
 		m_folder(imagesFolder), m_loaded(false), m_processing(false)
@@ -57,8 +55,10 @@ namespace winrt::DesktopTek::implementation
 
 		//Have to protect for multi-thread
 		//this function need to run one at a time
-		if (!isInitialized() || isProcessing())
+		if (!isInitialized() || isProcessing()) {
+			TRACE("Cancel check faces " << !isInitialized() << " " << isProcessing() << std::endl);
 			co_return winrt::single_threaded_vector(std::move(foundImages));
+		}			
 
 		setProcessing(true);
 		//Run in background
@@ -75,7 +75,8 @@ namespace winrt::DesktopTek::implementation
 			{
 				auto shape = m_sp(img, face);
 				dlib::matrix<dlib::rgb_pixel> face_chip;
-				extract_image_chip(img, get_face_chip_details(shape, 150, 0.25), face_chip);
+				auto details = dlib::get_face_chip_details(shape, 150, 0.25);
+				dlib::extract_image_chip(img, details, face_chip);
 				toFindFaces.push_back(std::move(face_chip));
 			}
 
@@ -110,7 +111,7 @@ namespace winrt::DesktopTek::implementation
 				if (finalRef >= 0) {
 					TRACE("Name of ref found for target " << target << " is " << refFacesName[finalRef].c_str()
 						<< " with confidence of " << smallestLength << std::endl);
-					foundImages.push_back(winrt::to_hstring(refFacesName[finalRef]));
+					foundImages.push_back(winrt::impl::to_hstring(refFacesName[finalRef]));
 				}
 				else {
 					TRACE("No face found for target " << target << std::endl);
@@ -191,6 +192,7 @@ namespace winrt::DesktopTek::implementation
 		auto sourcePixels = pixelData.DetachPixelData();
 
 		img.set_size(height, width);
+		TRACE("Created img of size " << width << " " << height << std::endl);
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {

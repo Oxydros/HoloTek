@@ -14,7 +14,7 @@ using namespace std;
 namespace winrt::DesktopTek::implementation
 {
 	MainPage::MainPage() : m_frameReader(nullptr), m_latestBitmap(nullptr),
-		m_api("XXXXXXXXXXX"),
+		m_api("XXXXXXXXXXXXXXXX"),
 		m_processFaces(false)
 	{
 		InitializeComponent();
@@ -54,7 +54,7 @@ namespace winrt::DesktopTek::implementation
 		auto codeEvent = winrt::unbox_value<hstring>(button.Content());
 		TRACE("Got click on code event " << codeEvent.c_str() << std::endl);
 		auto foundActivity = std::find_if(m_activities.begin(), m_activities.end(), [&codeEvent](auto &activity) {
-			return activity.codeEvent == winrt::to_string(codeEvent);
+			return activity.codeEvent == codeEvent;
 		});
 		if (foundActivity != m_activities.end()) {
 			StudentPanel().Visibility(Visibility::Visible);
@@ -66,10 +66,10 @@ namespace winrt::DesktopTek::implementation
 			m_currentActivity = activity;
 			for (auto student : registeredStudents) {
 				TRACE("		" << student.title.c_str() << std::endl);
-				auto button = Windows::UI::Xaml::Controls::Button();
-				button.Content(winrt::box_value(winrt::to_hstring(student.title)));
-				StudentPanel().Children().Append(std::move(button));
-				m_studentsToCheck.push_back(student.login);
+				auto studentButton = Windows::UI::Xaml::Controls::Button();
+				studentButton.Content(winrt::box_value(winrt::to_hstring(student.title)));
+				StudentPanel().Children().Append(std::move(studentButton));
+				m_studentsToCheck.push_back(std::string(student.login.begin(), student.login.end()));
 			}
 			m_processFaces = true;
 		}
@@ -87,7 +87,7 @@ namespace winrt::DesktopTek::implementation
 		for (auto activity : m_activities)
 		{
 			auto button = Windows::UI::Xaml::Controls::Button();
-			button.Content(winrt::box_value(winrt::to_hstring(activity.codeEvent)));
+			button.Content(winrt::box_value(activity.codeEvent));
 			button.Click(std::bind(&MainPage::ActivityHandler, this, std::placeholders::_1, std::placeholders::_2));
 			ActivityPanel().Children().Append(std::move(button));
 		}
@@ -159,35 +159,29 @@ namespace winrt::DesktopTek::implementation
 		co_await m_mediaCapture.StartPreviewAsync();
 		m_previewProperties = m_mediaCapture.VideoDeviceController().GetMediaStreamProperties(Capture::MediaStreamType::VideoPreview);
 	}
-	
+
 	void MainPage::OnFrameArrived(MediaFrameReader const &sender, MediaFrameArrivedEventArgs const &args)
 	{
-		static int frameCount = 0;
-		
 		m_propertiesLock.lock();
-		if (!m_processFaces){
+		if (!m_processFaces) {
 			m_propertiesLock.unlock();
 			return;
 		}
 		m_propertiesLock.unlock();
-		frameCount++;
-		if (frameCount == 120)
-		{
-			MediaFrameReference frame = sender.TryAcquireLatestFrame();
+		MediaFrameReference frame = sender.TryAcquireLatestFrame();
 
-			frameCount = 0;
-			if (frame == nullptr) {
-				return;
+		if (frame == nullptr) {
+			return;
+		}
+
+		auto videoFrame = frame.VideoMediaFrame();
+		if (videoFrame != nullptr) {
+			m_latestBitmap = videoFrame.SoftwareBitmap();
+			if (m_latestBitmap != nullptr && m_faceBuffer.isProcessing() == false) {
+				TRACE("Triggering process visages async" << std::endl);
+				m_faceBuffer.GetMatchingImagesAsync(std::move(m_latestBitmap));
+				/*ProcessVisagesAsync(std::move(m_latestBitmap));*/
 			}
-
-			auto videoFrame = frame.VideoMediaFrame();
-			if (videoFrame != nullptr){
-				m_latestBitmap = videoFrame.SoftwareBitmap();
-				if (m_latestBitmap != nullptr && m_faceBuffer.isProcessing() == false) {
-					TRACE("Triggering process visages async" << std::endl);
-					ProcessVisagesAsync(std::move(m_latestBitmap));
-				}					
-			}			
 		}
 	}
 

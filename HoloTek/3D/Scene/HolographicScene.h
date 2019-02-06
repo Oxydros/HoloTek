@@ -10,6 +10,10 @@
 #include "3D\Entities\GUI\Menus\MainMenu.h"
 #include "3D\Entities\GUI\Menus\ActivityMenu.h"
 #include "3D\Input\InteractionListener.h"
+
+#include "Recognition\VideoFrameProcessor.h"
+#include "Recognition\FacesBuffer.h"
+
 #include "API/IntraAPI.h"
 
 ///-------------------------------------------------------------------------------------------------
@@ -146,6 +150,9 @@ namespace HoloTek
 		std::shared_ptr<DX::DeviceResources>							m_deviceResources;
 		/// <summary>	Root node. </summary>
 		std::unique_ptr<EmptyEntity>									m_root;
+
+		std::shared_ptr<VideoFrameProcessor>                            m_videoFrameProcessor;
+		std::shared_ptr<FacesBuffer>									m_facesBuffer;
 
 		/// <summary>	The main menu. </summary>
 		MainMenu														*m_mainMenu{ nullptr };

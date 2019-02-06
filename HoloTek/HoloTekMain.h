@@ -18,7 +18,8 @@
 // Updates, renders, and presents holographic content using Direct3D.
 namespace HoloTek
 {
-	//class VideoFrameProcessor;
+	class VideoFrameProcessor;
+	class FacesBuffer;
 	//class FaceTrackerProcessor;
 
 	//class QuadRenderer;
@@ -95,9 +96,6 @@ namespace HoloTek
 		// A reference frame attached to the holographic camera.
 		winrt::Windows::Perception::Spatial::SpatialLocatorAttachedFrameOfReference m_referenceFrame = nullptr;
 
-
-		//// Video and face tracking processors
-		//std::shared_ptr<VideoFrameProcessor>                            m_videoFrameProcessor;
 		//std::shared_ptr<FaceTrackerProcessor>                           m_faceTrackerProcessor;
 
 		//// Objects related to rendering/3D models

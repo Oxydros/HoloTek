@@ -13,12 +13,11 @@
 #include "HoloTekMain.h"
 #include "3D/Utility/DirectXHelper.h"
 
-#include "Content\VideoFrameProcessor.h"
-#include "Content\FaceTrackerProcessor.h"
+//#include "Content\FaceTrackerProcessor.h"
+//#include "Content\SpinningCubeRenderer.h"
+//#include "Content\QuadRenderer.h"
+//#include "Content\NV12VideoTexture.h"
 
-#include "Content\SpinningCubeRenderer.h"
-#include "Content\QuadRenderer.h"
-#include "Content\NV12VideoTexture.h"
 #include "3D/Objects/GUI/Text/TextRenderer.h"
 
 #include "3D/Scene/HolographicScene.h"
@@ -51,15 +50,6 @@ HoloTekMain::HoloTekMain(std::shared_ptr<DX::DeviceResources> deviceResources) :
 
 winrt::Windows::Foundation::IAsyncAction HoloTekMain::SetHolographicSpace(HolographicSpace const &holographicSpace)
 {
-	//std::wstring path{ winrt::Windows::ApplicationModel::Package::Current().InstalledLocation().Path() };
-	//auto storage = co_await winrt::Windows::Storage::StorageFolder::GetFolderFromPathAsync(L"ms-appx:///Assets");
-	//auto files = co_await storage.GetFilesAsync();
-
-	//for (auto f : files)
-	//{
-	//	TRACE("Got file " << f.Name().c_str() << std::endl);
-	//}
-
 	UnregisterHolographicEventHandlers();
 
 	m_holoScene = std::make_shared<HolographicScene>(m_deviceResources);

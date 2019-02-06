@@ -1,10 +1,9 @@
 #include "pch.h"
 #include "IntraAPI.h"
 
-using namespace winrt;
-using namespace Windows::Foundation;
-using namespace Windows::Web;
-using namespace Windows::Web::Http;
+using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Web;
+using namespace winrt::Windows::Web::Http;
 
 namespace winrt::DesktopTek::implementation
 {
@@ -17,7 +16,7 @@ namespace winrt::DesktopTek::implementation
 	{
 	}
 
-	IAsyncOperation<HttpStatusCode> IntraAPI::LoginAsync()
+	IAsyncOperation<HttpStatusCode> IntraAPI::LoginAsync() const
 	{
 		auto headers = m_client.DefaultRequestHeaders();
 
@@ -27,7 +26,7 @@ namespace winrt::DesktopTek::implementation
 		co_return response.StatusCode();
 	}
 
-	concurrency::task<std::vector<IntraAPI::Activity>> IntraAPI::GetActivitiesAsync()
+	concurrency::task<std::vector<IntraAPI::Activity>> IntraAPI::GetActivitiesAsync() const
 	{
 		return concurrency::create_task([&] {
 			std::vector<IntraAPI::Activity> activities;
@@ -48,7 +47,7 @@ namespace winrt::DesktopTek::implementation
 
 			auto content = response.Content().ReadAsStringAsync().get();
 
-			auto root = Windows::Data::Json::JsonValue::Parse(content);
+			auto root = winrt::Windows::Data::Json::JsonValue::Parse(content);
 
 			for (auto item : root.GetArray())
 			{
@@ -60,12 +59,12 @@ namespace winrt::DesktopTek::implementation
 				auto codeEvent = object.GetNamedString(L"codeevent");
 				auto moduleName = object.GetNamedString(L"titlemodule");
 				auto newActivity = IntraAPI::Activity{
-					winrt::to_string(scholarYear),
-					winrt::to_string(codeModule),
-					winrt::to_string(codeInstance),
-					winrt::to_string(codeActi),
-					winrt::to_string(codeEvent),
-					winrt::to_string(moduleName)
+					scholarYear,
+					codeModule,
+					codeInstance,
+					codeActi,
+					codeEvent,
+					moduleName
 				};
 				activities.push_back(std::move(newActivity));
 			}
@@ -74,15 +73,15 @@ namespace winrt::DesktopTek::implementation
 	}
 
 	//https://intra.epitech.eu/module/2018/B-INN-000/TLS-0-1/acti-326701/event-322207/registered?format=json
-	concurrency::task<std::vector<IntraAPI::Student>> IntraAPI::GetRegisteredStudentsAsync(Activity const &activity)
+	concurrency::task<std::vector<IntraAPI::Student>> IntraAPI::GetRegisteredStudentsAsync(Activity const &activity) const
 	{
 		return concurrency::create_task([&] {
 			std::vector<IntraAPI::Student> students;
 
-			std::stringstream uriStream;
+			std::wstringstream uriStream;
 
 			uriStream << "https://intra.epitech.eu/module/"
-				<< activity.scholarYear << "/"
+				<< activity.scholarYear.c_str() << "/"
 				<< activity.codeModule.c_str() << "/"
 				<< activity.codeInstance.c_str() << "/"
 				<< activity.codeActi.c_str() << "/"
@@ -90,12 +89,12 @@ namespace winrt::DesktopTek::implementation
 
 			auto uriString = uriStream.str();
 
-			auto registeredURI = Uri(winrt::to_hstring(uriString));
+			auto registeredURI = Uri(uriString);
 			auto response = m_client.GetAsync(registeredURI).get();
 
 			auto content = response.Content().ReadAsStringAsync().get();
 
-			auto root = Windows::Data::Json::JsonValue::Parse(content);
+			auto root = winrt::Windows::Data::Json::JsonValue::Parse(content);
 
 			try
 			{
@@ -106,9 +105,9 @@ namespace winrt::DesktopTek::implementation
 					auto title = object.GetNamedString(L"title");
 					auto picture = object.GetNamedString(L"picture");
 					auto student = IntraAPI::Student{
-						winrt::to_string(login),
-						winrt::to_string(title),
-						winrt::to_string(picture)
+						login,
+						title,
+						picture
 					};
 					students.push_back(std::move(student));
 				}
@@ -124,12 +123,12 @@ namespace winrt::DesktopTek::implementation
 
 	//https://intra.epitech.eu/module/2018/B-INN-000/TLS-0-1/acti-331246/event-329201/updateregistered?format=json
 	IAsyncAction IntraAPI::MarkRegisteredStudentsAsync(Activity activity,
-			winrt::Windows::Foundation::Collections::IVector<winrt::hstring> logins)
+		winrt::Windows::Foundation::Collections::IVector<winrt::hstring> logins) const
 	{
-		std::stringstream uriStream;
+		std::wstringstream uriStream;
 
 		uriStream << "https://intra.epitech.eu/module/"
-			<< activity.scholarYear << "/"
+			<< activity.scholarYear.c_str() << "/"
 			<< activity.codeModule.c_str() << "/"
 			<< activity.codeInstance.c_str() << "/"
 			<< activity.codeActi.c_str() << "/"
@@ -138,7 +137,7 @@ namespace winrt::DesktopTek::implementation
 		TRACE("URL is " << uriStream.str().c_str() << std::endl);
 
 		auto uriString = uriStream.str();
-		auto registeredURI = Uri(winrt::to_hstring(uriString));
+		auto registeredURI = Uri(uriString);
 
 		std::map<winrt::hstring, winrt::hstring> contentMap{};
 

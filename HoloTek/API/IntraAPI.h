@@ -13,6 +13,7 @@ namespace HoloTek
 			winrt::hstring codeActi;
 			winrt::hstring codeEvent;
 			winrt::hstring moduleName;
+			winrt::hstring actiTitle;
 		};
 
 		struct Student
@@ -27,7 +28,7 @@ namespace HoloTek
 		~IntraAPI();
 
 		winrt::Windows::Foundation::IAsyncOperation<winrt::Windows::Web::Http::HttpStatusCode> LoginAsync() const;
-		concurrency::task<std::vector<Activity>> GetActivitiesAsync() const;
+		concurrency::task<std::vector<Activity>> GetActivitiesAsync(bool timeCheck = true) const;
 		concurrency::task<std::vector<Student>> GetRegisteredStudentsAsync(Activity const &activity) const;
 		winrt::Windows::Foundation::IAsyncAction MarkRegisteredStudentsAsync(Activity activity,
 			winrt::Windows::Foundation::Collections::IVector<winrt::hstring> logins) const;

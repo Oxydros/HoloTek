@@ -9,7 +9,7 @@ using namespace winrt::Windows::Media::Capture;
 using namespace winrt::Windows::Media::Capture::Frames;
 
 HoloTek::HolographicScene::HolographicScene(std::shared_ptr<DX::DeviceResources> deviceResources)
-	: m_deviceResources(deviceResources), m_api("XXXXXXXXXXXXXXXX")
+	: m_deviceResources(deviceResources), m_api("XXXXXXXXXXXXXXX")
 {
 }
 
@@ -43,7 +43,7 @@ std::future<void> HoloTek::HolographicScene::InitializeAsync()
 	addEntity(std::move(mainMenu));
 
 	auto actiMenu = std::make_unique<ActivityMenu>(m_deviceResources, safeScene, m_api);
-	actiMenu->SetRelativePosition({ 0.0f, 0.0f, -3.0f });
+	actiMenu->SetRelativePosition({ 1.0f, 0.0f, -3.0f });
 
 	co_await actiMenu->InitializeMenuAsync();
 	actiMenu->setVisible(false);
@@ -96,23 +96,71 @@ void HoloTek::HolographicScene::Update(DX::StepTimer const& timer)
 
 	if (m_videoFrameProcessor)
 	{
+		std::scoped_lock lock(m_propertyMutex);
+
 		MediaFrameReference frame = m_videoFrameProcessor->GetLatestFrame();
-		if (frame != nullptr)
+		//Check that we are currently processing faces for an activity and
+		//that we got a valid frame
+		if (m_processingFaces && frame != nullptr)
 		{
 			auto videoFrame = frame.VideoMediaFrame();
 			if (videoFrame != nullptr)
 			{
 				auto bitmap = videoFrame.SoftwareBitmap();
+				//Check that the face buffer is not processing right now
+				//as it is async (not necessary since there is already a 
+				//check inside, but just to be sure)
 				if (bitmap != nullptr && m_facesBuffer->isProcessing() == false)
 				{
-					TRACE("Launching match faces" << std::endl);
-					m_facesBuffer->GetMatchingImagesAsync(std::move(bitmap));
+					TRACE("Launching match faces for activity " << m_currentActivity.codeEvent.c_str() << std::endl);
+					/*m_facesBuffer->GetMatchingImagesAsync(std::move(bitmap));*/
+					ProcessStudentsFacesForActivityAsync(std::move(bitmap), m_studentsToCheck, m_currentActivity);
 				}
 			}
 		}
 	}
 
 	m_root->Update(timer);
+}
+
+//Call when clicking on an activity in the Activity Menu
+std::future<void> HoloTek::HolographicScene::StartFaceDetection(IntraAPI::Activity const &activity) {
+	m_propertyMutex.lock();
+
+	if (m_processingFaces) {
+		m_propertyMutex.unlock();
+		co_return;
+	}
+	m_propertyMutex.unlock();
+	auto registeredStudents = co_await m_api.GetRegisteredStudentsAsync(activity);
+	m_propertyMutex.lock();
+	TRACE(registeredStudents.size() << " registered students for this activity:" << std::endl);
+	m_studentsToCheck.clear();
+	m_currentActivity = activity;
+	for (auto student : registeredStudents) {
+		TRACE("		" << student.title.c_str() << std::endl);
+		m_studentsToCheck.push_back(std::string(student.login.begin(), student.login.end()));
+	}
+	m_processingFaces = true;
+	m_mainMenu->DisplayStopButton();
+	m_propertyMutex.unlock();
+	co_return;
+}
+
+//Call during the update, as a non blocking co routine
+winrt::Windows::Foundation::IAsyncAction HoloTek::HolographicScene::ProcessStudentsFacesForActivityAsync(winrt::Windows::Graphics::Imaging::SoftwareBitmap facesToFind,
+	std::vector<std::string> studentsToFind, IntraAPI::Activity currentActivity)
+{
+	TRACE("Launching process on students to check" << std::endl);
+	auto studentsFound = co_await m_facesBuffer->GetMatchingImagesAsync(std::move(facesToFind), studentsToFind);
+	TRACE("Found " << studentsFound.Size() << " present in the activity " << m_currentActivity.codeEvent.c_str() << std::endl);
+	for (auto student : studentsFound) {
+		TRACE("Found " << student.c_str() << " !" << std::endl);
+	}
+	if (studentsFound.Size() > 0) {
+		co_await m_api.MarkRegisteredStudentsAsync(currentActivity, studentsFound);
+	}
+	co_return;
 }
 
 void HoloTek::HolographicScene::Render()

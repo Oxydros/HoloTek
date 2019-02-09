@@ -38,15 +38,6 @@ DirectX::XMMATRIX const Entity::GetTransformMatrix() const
 
 void Entity::Update(DX::StepTimer const & timer)
 {
-	//Add new entities created at the previous call to update
-	std::for_each(m_newChilds.begin(), m_newChilds.end(),
-		[this](auto &child)
-	{
-		TRACE("Adding new child from pending list " << child->GetLabel().c_str() << " " << child.get() << std::endl);
-		m_childs.emplace_back(std::move(child));
-	});
-	m_newChilds.clear();
-
 	if (m_scene->getPointerPose() != nullptr) {
 		float3 positionMotion = m_scene->getPointerPose().Head().Position() - m_previousGazePosition;
 		float3 directionMotion = m_scene->getPointerPose().Head().ForwardDirection()- m_previousGazeDirection;
@@ -86,6 +77,15 @@ void Entity::Update(DX::StepTimer const & timer)
 		}),
 		m_childs.end()
 	);
+
+	//Add new entities created at the previous call to update
+	std::for_each(m_newChilds.begin(), m_newChilds.end(),
+		[this](auto &child)
+	{
+		TRACE("Adding new child from pending list " << child->GetLabel().c_str() << " " << child.get() << std::endl);
+		m_childs.emplace_back(std::move(child));
+	});
+	m_newChilds.clear();
 
 	/*TRACE("For " << this << " Real position is (" << _realPosition.x << ", " << _realPosition.y << ", " << _realPosition.z
 		  << ") Relative is (" << _relativePosition.x << ", " << _relativePosition.y << ", " << _relativePosition.z << ")"
@@ -291,7 +291,9 @@ void Entity::RemoveChild(IEntity *child)
 	m_childs.erase(
 		std::remove_if(m_childs.begin(), m_childs.end(),
 			[&child](auto &c) {
-				return c.get() == child;
+				if (c.get() == child)
+					TRACE("Removing child " << child->GetLabel().c_str() << std::endl);
+				return (c.get() == child);
 			}),
 		m_childs.end());
 }

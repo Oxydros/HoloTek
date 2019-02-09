@@ -26,7 +26,7 @@ namespace HoloTek
 		co_return response.StatusCode();
 	}
 
-	concurrency::task<std::vector<IntraAPI::Activity>> IntraAPI::GetActivitiesAsync() const
+	concurrency::task<std::vector<IntraAPI::Activity>> IntraAPI::GetActivitiesAsync(bool timeCheck) const
 	{
 		return concurrency::create_task([&] {
 			std::vector<IntraAPI::Activity> activities;
@@ -54,12 +54,36 @@ namespace HoloTek
 				for (auto item : root.GetArray())
 				{
 					auto object = item.GetObject();
+
+					auto startTime = object.GetNamedString(L"start");
+					auto endTime = object.GetNamedString(L"end");
+
+					if (timeCheck)
+					{
+						struct tm actiStartTime;
+						struct tm actiEndTime;
+						std::stringstream ssStart(std::string(startTime.begin(), startTime.end()));
+						std::stringstream ssEnd(std::string(startTime.begin(), startTime.end()));
+						ssStart >> std::get_time(&actiStartTime, "%Y-%m-%d %H:%M:%S");
+						ssEnd >> std::get_time(&actiEndTime, "%Y-%m-%d %H:%M:%S");
+
+						auto mkStart = std::mktime(&actiStartTime);
+						auto mkEnd = std::mktime(&actiEndTime);
+						//If not current time inside the activity hours, just skip it
+						//currentTime must be > than mkStart
+						//mkEnd must be > than currentTime
+						if (!(std::difftime(currentTime, mkStart) >= 0 &&
+							std::difftime(mkEnd, currentTime) >= 0))
+							continue;
+					}
+
 					auto scholarYear = object.GetNamedString(L"scolaryear");
 					auto codeModule = object.GetNamedString(L"codemodule");
 					auto codeInstance = object.GetNamedString(L"codeinstance");
 					auto codeActi = object.GetNamedString(L"codeacti");
 					auto codeEvent = object.GetNamedString(L"codeevent");
 					auto moduleName = object.GetNamedString(L"titlemodule");
+					auto actiTitle = object.GetNamedString(L"acti_title");
 					auto newActivity = IntraAPI::Activity{
 						scholarYear,
 						codeModule,
@@ -70,7 +94,8 @@ namespace HoloTek
 					};
 					activities.push_back(std::move(newActivity));
 				}
-			} catch (winrt::hresult_illegal_method_call const &e)
+			}
+			catch (winrt::hresult_illegal_method_call const &e)
 			{
 				TRACE("Error while processing actvities " << e.message().c_str()
 					<< " content is " << content.c_str() << std::endl);

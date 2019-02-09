@@ -82,15 +82,26 @@ namespace HoloTek
 		/// <summary>	Kills this object. </summary>
 		void kill() { m_alive = false; }
 	public:
-		inline void GoToMainMenu() {
-			m_mainMenu->setVisible(true);
-			m_activityMenu->setVisible(false);
-		};
-		inline void GoToActivityMenu() {
-			m_mainMenu->setVisible(false);
-			m_activityMenu->setVisible(true);
-		};
 
+		//Functions to interact with facial recognition and Intranet API
+		std::future<void> RefreshActivities() {
+			co_await m_activityMenu->refreshActivityListAsync();
+			co_return;
+		}
+
+		void StopFaceDetection() {
+			std::scoped_lock lock(m_propertyMutex);
+			m_processingFaces = false;
+		}
+
+		std::future<void> StartFaceDetection(IntraAPI::Activity const &activity);
+
+	private:
+		winrt::Windows::Foundation::IAsyncAction ProcessStudentsFacesForActivityAsync(winrt::Windows::Graphics::Imaging::SoftwareBitmap facesToFind,
+			std::vector<std::string> studentsToFind, IntraAPI::Activity currentActivity);
+
+
+	public:
 		///-------------------------------------------------------------------------------------------------
 		/// <summary>	Gets device resources. </summary>
 		///
@@ -163,6 +174,10 @@ namespace HoloTek
 		IEntity															*m_focusedEntity{ nullptr };
 
 		IntraAPI														m_api;
+		bool															m_processingFaces{ false };
+		std::vector<std::string>										m_studentsToCheck;
+		IntraAPI::Activity												m_currentActivity;
+		std::mutex														m_propertyMutex;
 	};
 }
 

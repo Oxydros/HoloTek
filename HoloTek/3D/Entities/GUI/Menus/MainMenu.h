@@ -21,7 +21,20 @@ namespace HoloTek
 		std::string const GetLabel() const override { return "MainMenu"; };
 		void DoUpdate(DX::StepTimer const & timer) override {};
 
+		inline  void DisableRefreshButton() {
+			m_refreshButton->SetIgnoreInGaze(true);
+		}
+
+		inline void ActivateRefreshButton() {
+			m_refreshButton->SetIgnoreInGaze(false);
+		}
+
+		inline void DisplayStopButton() {
+			m_stopButton->setVisible(true);
+		}
 	private:
 		std::shared_ptr<DX::DeviceResources>	m_devicesResources;
+		Entity									*m_refreshButton;
+		Entity									*m_stopButton;
 	};
 }

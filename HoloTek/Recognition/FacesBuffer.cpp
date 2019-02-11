@@ -39,6 +39,10 @@ namespace HoloTek
 		dlib::deserialize("./Assets/refFaces_data.dat") >> m_refFacesDescriptors;
 
 		TRACE("Got " << m_refFacesDescriptors.size() << " descriptors" << std::endl);
+
+		for (auto a : m_refImagesNames) {
+			TRACE(a.c_str() << std::endl);
+		}
 	}
 
 	concurrency::task<void> FacesBuffer::InitializeAsync()
@@ -142,7 +146,10 @@ namespace HoloTek
 		std::vector<std::string> refFacesName;
 
 		for (auto studentToFind : studentsToCheck) {
+			//TRACE("Trying to find " << studentToFind.c_str() << std::endl);
 			auto foundRef = std::find_if(m_refImagesNames.begin(), m_refImagesNames.end(), [&studentToFind](std::string const &imageName) {
+				//TRACE("Text " << imageName.c_str() << " is it the same as " << studentToFind.c_str() << " ? "
+				//			<< (studentToFind == imageName ? "OUI" : "NON") << std::endl);
 				return studentToFind == imageName;
 			});
 

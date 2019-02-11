@@ -20,7 +20,6 @@ namespace HoloTek
 		{
 			winrt::hstring login;
 			winrt::hstring title;
-			winrt::hstring picture;
 		};
 
 	public:

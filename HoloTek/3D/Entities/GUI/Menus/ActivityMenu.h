@@ -11,6 +11,7 @@ using namespace winrt::Windows::Foundation::Numerics;
 namespace HoloTek
 {
 	class Panel;
+	class Button2D;
 
 	class ActivityMenu : public Entity
 	{
@@ -31,17 +32,22 @@ namespace HoloTek
 		std::future<void> refreshActivityListAsync();
 
 	private:
-		void renderAtOffset(size_t offset = 0);
+		void RenderAtOffset(size_t offset = 0);
+		void UpdateInfoLabel();
 		void incOffset() {
 			std::scoped_lock lock(m_propertyMutex);
 			m_offset = (m_offset + ACTI_RENDER_SZ) % m_activities.size();
+			m_currentPage = (m_currentPage + 1) % (m_maxPage + 1);
 		}
 
 		void decOffset() {
 			std::scoped_lock lock(m_propertyMutex);
 			m_offset = (m_offset - ACTI_RENDER_SZ);
+			m_currentPage -= 1;
 			if (m_offset < 0)
 				m_offset += m_activities.size();
+			if (m_currentPage < 0)
+				m_currentPage = m_maxPage;
 		}
 
 	private:
@@ -50,6 +56,9 @@ namespace HoloTek
 		Panel									*m_background{ nullptr };
 		Entity									*m_rightArrow{ nullptr };
 		Entity									*m_leftArrow{ nullptr };
+		Button2D								*m_pageInfo{ nullptr };
+		size_t									m_maxPage{ 0 };
+		size_t									m_currentPage{ 0 };
 		IntraAPI								const &m_api;
 		std::mutex								m_propertyMutex;
 		std::vector<IntraAPI::Activity>			m_activities;

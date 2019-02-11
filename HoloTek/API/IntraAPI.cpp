@@ -55,27 +55,6 @@ namespace HoloTek
 				{
 					auto object = item.GetObject();
 
-					auto startTime = object.GetNamedString(L"start");
-					auto endTime = object.GetNamedString(L"end");
-
-					if (timeCheck)
-					{
-						struct tm actiStartTime;
-						struct tm actiEndTime;
-						std::stringstream ssStart(std::string(startTime.begin(), startTime.end()));
-						std::stringstream ssEnd(std::string(startTime.begin(), startTime.end()));
-						ssStart >> std::get_time(&actiStartTime, "%Y-%m-%d %H:%M:%S");
-						ssEnd >> std::get_time(&actiEndTime, "%Y-%m-%d %H:%M:%S");
-
-						auto mkStart = std::mktime(&actiStartTime);
-						auto mkEnd = std::mktime(&actiEndTime);
-						//If not current time inside the activity hours, just skip it
-						//currentTime must be > than mkStart
-						//mkEnd must be > than currentTime
-						if (!(std::difftime(currentTime, mkStart) >= 0 &&
-							std::difftime(mkEnd, currentTime) >= 0))
-							continue;
-					}
 
 					auto scholarYear = object.GetNamedString(L"scolaryear");
 					auto codeModule = object.GetNamedString(L"codemodule");
@@ -84,13 +63,41 @@ namespace HoloTek
 					auto codeEvent = object.GetNamedString(L"codeevent");
 					auto moduleName = object.GetNamedString(L"titlemodule");
 					auto actiTitle = object.GetNamedString(L"acti_title");
+
+					auto startTime = object.GetNamedString(L"start");
+					auto endTime = object.GetNamedString(L"end");
+
+					if (timeCheck)
+					{
+						TRACE("Checking time for " << actiTitle.c_str() << std::endl);
+						struct tm actiStartTime;
+						struct tm actiEndTime;
+						std::stringstream ssStart(std::string(startTime.begin(), startTime.end()));
+						std::stringstream ssEnd(std::string(endTime.begin(), endTime.end()));
+						ssStart >> std::get_time(&actiStartTime, "%Y-%m-%d %H:%M:%S");
+						ssEnd >> std::get_time(&actiEndTime, "%Y-%m-%d %H:%M:%S");
+
+						TRACE("Got hout start " << actiStartTime.tm_hour << " hour end " << actiEndTime.tm_hour << std::endl);
+
+						auto mkStart = std::mktime(&actiStartTime);
+						auto mkEnd = std::mktime(&actiEndTime);
+						//If not current time inside the activity hours, just skip it
+						//currentTime must be > than mkStart
+						//mkEnd must be > than currentTime
+						if (!(std::difftime(currentTime, mkStart) >= 0 &&
+							std::difftime(mkEnd, currentTime) >= 0)) {
+							TRACE("Acti " << actiTitle.c_str() << " not in time" << std::endl);
+							continue;
+						}							
+					}
 					auto newActivity = IntraAPI::Activity{
 						scholarYear,
 						codeModule,
 						codeInstance,
 						codeActi,
 						codeEvent,
-						moduleName
+						moduleName,
+						actiTitle
 					};
 					activities.push_back(std::move(newActivity));
 				}
@@ -136,11 +143,9 @@ namespace HoloTek
 					auto object = item.GetObject();
 					auto login = object.GetNamedString(L"login");
 					auto title = object.GetNamedString(L"title");
-					auto picture = object.GetNamedString(L"picture");
 					auto student = IntraAPI::Student{
 						login,
-						title,
-						picture
+						title
 					};
 					students.push_back(std::move(student));
 				}
@@ -206,6 +211,4 @@ namespace HoloTek
 		}
 		co_return;
 	}
-
-
 }

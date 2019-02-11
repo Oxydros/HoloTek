@@ -2,8 +2,8 @@
 #include <3D\Entities\GUI\Widgets\Button2D.h>
 #include <3D\Objects\GUI\ButtonObject.h>
 
-winrt::Windows::Foundation::Numerics::float4 HoloTek::Button2D::DEFAULT_COLOR = { 0.243f, 0.815f, 0.854f, 1.0f };
-winrt::Windows::Foundation::Numerics::float4 HoloTek::Button2D::FOCUS_COLOR = { 0.443f, 0.515f, 0.454f, 1.0f };
+winrt::Windows::Foundation::Numerics::float4 HoloTek::Button2D::DEFAULT_COLOR = { 0.443f, 0.515f, 0.454f, 1.0f };
+winrt::Windows::Foundation::Numerics::float4 HoloTek::Button2D::FOCUS_COLOR = { 0.343f, 0.415f, 0.354f, 1.0f };
 
 HoloTek::Button2D::Button2D(std::shared_ptr<DX::DeviceResources> devicesResources,
 							   std::shared_ptr<HolographicScene> scene,

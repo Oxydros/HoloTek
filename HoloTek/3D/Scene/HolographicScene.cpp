@@ -9,7 +9,7 @@ using namespace winrt::Windows::Media::Capture;
 using namespace winrt::Windows::Media::Capture::Frames;
 
 HoloTek::HolographicScene::HolographicScene(std::shared_ptr<DX::DeviceResources> deviceResources)
-	: m_deviceResources(deviceResources), m_api("XXXXXXXXXXXXXXX")
+	: m_deviceResources(deviceResources), m_api("XXXXXXXXX")
 {
 }
 
@@ -55,6 +55,7 @@ std::future<void> HoloTek::HolographicScene::InitializeAsync()
 	if (status != winrt::Windows::Web::Http::HttpStatusCode::Ok)
 	{
 		TRACE("Logged in status " << "NOT OK" << std::endl);
+		std::runtime_error("Not connected");
 	}
 	else {
 		TRACE("Logged in status " << "NICKEL" << std::endl);
@@ -138,7 +139,7 @@ std::future<void> HoloTek::HolographicScene::StartFaceDetection(IntraAPI::Activi
 	m_studentsToCheck.clear();
 	m_currentActivity = activity;
 	for (auto student : registeredStudents) {
-		TRACE("		" << student.title.c_str() << std::endl);
+		TRACE("		" << student.title.c_str() << " " << student.login.c_str() << std::endl);
 		m_studentsToCheck.push_back(std::string(student.login.begin(), student.login.end()));
 	}
 	m_processingFaces = true;
@@ -153,7 +154,7 @@ winrt::Windows::Foundation::IAsyncAction HoloTek::HolographicScene::ProcessStude
 {
 	TRACE("Launching process on students to check" << std::endl);
 	auto studentsFound = co_await m_facesBuffer->GetMatchingImagesAsync(std::move(facesToFind), studentsToFind);
-	TRACE("Found " << studentsFound.Size() << " present in the activity " << m_currentActivity.codeEvent.c_str() << std::endl);
+	TRACE("Found " << studentsFound.Size() << " present in the activity " << m_currentActivity.actiTitle.c_str() << std::endl);
 	for (auto student : studentsFound) {
 		TRACE("Found " << student.c_str() << " !" << std::endl);
 	}

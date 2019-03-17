@@ -99,12 +99,15 @@ namespace HoloTek
 
 			TRACE("Size of ref to check is " << refFacesDescriptors.size() << std::endl);
 
+			//Comparing faces to ID with references
 			for (size_t target = 0; target < toFindFacesDescriptors.size(); target++) {
 
 				float smallestLength = 1.0f;
 				int finalRef = -1;
 				auto targetDesc = toFindFacesDescriptors[target];
 
+				//This is iterating over ALL the references, trying to find the best match for the
+				//current face. You can change the threshold < 0.5 to make the recognition more or less strict
 				for (int ref = 0; ref < refFacesDescriptors.size(); ref++) {
 					auto length = dlib::length(refFacesDescriptors[ref] - targetDesc);
 					if (length < 0.5 && length < smallestLength) {
